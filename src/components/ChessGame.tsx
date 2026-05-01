@@ -15,18 +15,23 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { StockfishEngine } from "@/lib/stockfish";
-import { api, type AnalyzeGameRequest, type TiltDetectorResponse } from "@/lib/api";
+import { api, agentApi, type AnalyzeGameRequest, type TiltDetectorResponse } from "@/lib/api";
+import { classifyPly } from "@/lib/event-detector";
 import { TiltReport } from "./TiltReport";
+import { AgentChat } from "./AgentChat";
 
 type Status = "playing" | "white-wins" | "black-wins" | "draw";
 
 export function ChessGame() {
+  const [gameId, setGameId] = useState<string>(() => crypto.randomUUID());
+
   const gameRef = useRef(new Chess());
   const engineRef = useRef<StockfishEngine | null>(null);
   // We track per-ply data in refs so they don't trigger re-renders
   const evalPerPlyRef = useRef<number[]>([]);
   const timePerPlyRef = useRef<number[]>([]);
   const lastMoveStartRef = useRef<number>(Date.now());
+  const prevEvalRef = useRef<number>(0);
 
   const [fen, setFen] = useState(gameRef.current.fen());
   const [status, setStatus] = useState<Status>("playing");
@@ -34,6 +39,7 @@ export function ChessGame() {
   const [skillLevel, setSkillLevel] = useState(5); // 0=easy, 20=master
   const [analysis, setAnalysis] = useState<TiltDetectorResponse | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   // Initialize Stockfish once
   useEffect(() => {
@@ -48,31 +54,46 @@ export function ChessGame() {
     timePerPlyRef.current.push(thinkingMs / 1000);
     setFen(gameRef.current.fen());
 
-    // Evaluate position with Stockfish for our records
     if (engineRef.current) {
       const ev = await engineRef.current.evaluate(gameRef.current.fen(), 10);
-      // Stockfish gives eval from side-to-MOVE perspective. We always store
-      // from White's perspective so the backend math is consistent.
-      // After my move, side-to-move is opponent. Flip sign accordingly.
       const fromWhitePOV =
         gameRef.current.turn() === "w" ? ev.scoreCp : -ev.scoreCp;
-      // Mate scoring: clamp to a big number with sign
       const mateAdjusted =
         ev.mateIn != null
           ? ev.mateIn > 0
             ? 9999 * (gameRef.current.turn() === "w" ? 1 : -1)
             : -9999 * (gameRef.current.turn() === "w" ? 1 : -1)
           : fromWhitePOV;
+      const evalBefore = prevEvalRef.current;
       evalPerPlyRef.current.push(mateAdjusted);
+      prevEvalRef.current = mateAdjusted;
+
+      // The ply we just recorded was made by the side OPPOSITE to current turn.
+      const playerJustMoved = gameRef.current.turn() === "w" ? "black" : "white";
+      if (playerJustMoved === "white") {
+        const evt = classifyPly(evalBefore, mateAdjusted, "white");
+        if (evt === "blunder") {
+          const ply = evalPerPlyRef.current.length;
+          const lastSan = gameRef.current.history().slice(-1)[0] ?? "";
+          const time = timePerPlyRef.current.slice(-1)[0] ?? 0;
+          void agentApi
+            .observe(gameId, "blunder", {
+              ply, san: lastSan, eval_before: evalBefore,
+              eval_after: mateAdjusted, time_taken: time,
+            })
+            .then(async (r) => {
+              const reader = r.body?.getReader();
+              while (reader && !(await reader.read()).done) {}
+            });
+        }
+      }
     }
 
     if (gameRef.current.isGameOver()) {
       const newStatus = computeStatus();
       setStatus(newStatus);
-      // Auto-trigger analysis on game end
       void runAnalysis(newStatus);
     } else if (gameRef.current.turn() === "b") {
-      // Engine's turn
       void engineMove();
     }
   }
@@ -139,6 +160,7 @@ export function ChessGame() {
   async function runAnalysis(finalStatus: Status) {
     if (analyzing || analysis) return;
     setAnalyzing(true);
+    setAnalysisError(null);
     try {
       const result =
         finalStatus === "white-wins"
@@ -152,24 +174,30 @@ export function ChessGame() {
         time_per_ply: timePerPlyRef.current,
         player_color: "white",
         result,
+        client_game_id: gameId,
       };
       const r = await api.analyzeGame(req);
       setAnalysis(r);
     } catch (e) {
       console.error(e);
+      setAnalysisError(e instanceof Error ? e.message : "Analysis failed. Check that you are logged in and the server is running.");
     } finally {
       setAnalyzing(false);
     }
   }
 
   function reset() {
+    agentApi.closeSession(gameId).catch(() => {});
     gameRef.current = new Chess();
     evalPerPlyRef.current = [];
     timePerPlyRef.current = [];
+    prevEvalRef.current = 0;
     lastMoveStartRef.current = Date.now();
     setFen(gameRef.current.fen());
     setStatus("playing");
     setAnalysis(null);
+    setAnalysisError(null);
+    setGameId(crypto.randomUUID());
   }
 
   const boardOptions = useMemo(
@@ -224,23 +252,19 @@ export function ChessGame() {
       </div>
 
       <aside className="flex-1 lg:max-w-md">
-        {analyzing && (
-          <div className="rounded-2xl bg-ink-700 p-6 animate-pulse">
-            Analyzing your decision patterns…
+        {analysisError && !analyzing && (
+          <div className="rounded-2xl bg-ink-700 border border-signal-red p-4 mb-3">
+            <p className="text-signal-red text-sm font-medium mb-1">Analysis failed</p>
+            <p className="text-ink-500 text-xs leading-relaxed">{analysisError}</p>
+            <button
+              onClick={() => runAnalysis(status)}
+              className="mt-3 px-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-400 text-white text-xs font-medium"
+            >
+              Retry
+            </button>
           </div>
         )}
-        {analysis && <TiltReport report={analysis} />}
-        {!analysis && !analyzing && (
-          <div className="rounded-2xl bg-ink-800 border border-ink-600 p-6">
-            <h2 className="font-display text-xl mb-2">After this game...</h2>
-            <p className="text-ink-500 text-sm leading-relaxed">
-              We&apos;ll analyze not just your moves, but how you made them — your
-              thinking time, the moments you panicked, the patterns you keep
-              repeating. Most chess sites tell you what to play. We tell you{" "}
-              <em>why you played it</em>.
-            </p>
-          </div>
-        )}
+        <AgentChat threadId={gameId} tiltReport={analysis} />
       </aside>
     </div>
   );

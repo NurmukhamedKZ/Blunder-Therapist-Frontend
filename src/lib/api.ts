@@ -43,6 +43,7 @@ export interface AnalyzeGameRequest {
   time_per_ply: number[];
   player_color: "white" | "black";
   result: "win" | "loss" | "draw";
+  client_game_id?: string;
 }
 
 export interface TiltDetectorResponse {
@@ -66,6 +67,8 @@ export interface ChatTurn {
   role: "user" | "assistant";
   content: string;
 }
+
+
 
 export interface GameSummary {
   id: string;
@@ -95,4 +98,46 @@ export const api = {
 
   getGame: (id: string) =>
     get<GameSummary>(`/api/games/${id}`),
+};
+
+
+export interface AgentHistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+async function postStream(path: string, body: unknown): Promise<Response> {
+  const auth = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...auth },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${path} failed: ${res.status} ${text}`);
+  }
+  return res;
+}
+
+export const agentApi = {
+  observe: (thread_id: string, event: "game_start" | "blunder" | "game_end",
+            payload: Record<string, unknown> = {}) =>
+    postStream("/api/agent/observe", { thread_id, event, payload }),
+
+  message: (thread_id: string, text: string) =>
+    postStream("/api/agent/message", { thread_id, text }),
+
+  closeSession: async (thread_id: string) => {
+    const auth = await getAuthHeaders();
+    return fetch(`${API_BASE}/api/agent/close-session`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...auth },
+      body: JSON.stringify({ thread_id }),
+      keepalive: true,
+    });
+  },
+
+  history: (thread_id: string) =>
+    get<{ messages: AgentHistoryMessage[] }>(`/api/agent/history/${thread_id}`),
 };
