@@ -54,6 +54,24 @@ export function ChessGame() {
     timePerPlyRef.current.push(thinkingMs / 1000);
     setFen(gameRef.current.fen());
 
+    if (gameRef.current.isGameOver()) {
+      const newStatus = computeStatus();
+      setStatus(newStatus);
+
+      // Record final eval manually to avoid engine hang on terminal position
+      let finalEval = prevEvalRef.current;
+      if (gameRef.current.isCheckmate()) {
+        finalEval = gameRef.current.turn() === "b" ? 9999 : -9999;
+      } else if (gameRef.current.isDraw()) {
+        finalEval = 0;
+      }
+      evalPerPlyRef.current.push(finalEval);
+      prevEvalRef.current = finalEval;
+
+      void runAnalysis(newStatus);
+      return;
+    }
+
     if (engineRef.current) {
       const ev = await engineRef.current.evaluate(gameRef.current.fen(), 10);
       const fromWhitePOV =
@@ -78,8 +96,11 @@ export function ChessGame() {
           const time = timePerPlyRef.current.slice(-1)[0] ?? 0;
           void agentApi
             .observe(gameId, "blunder", {
-              ply, san: lastSan, eval_before: evalBefore,
-              eval_after: mateAdjusted, time_taken: time,
+              ply,
+              san: lastSan,
+              eval_before: evalBefore,
+              eval_after: mateAdjusted,
+              time_taken: time,
             })
             .then(async (r) => {
               const reader = r.body?.getReader();
@@ -89,11 +110,7 @@ export function ChessGame() {
       }
     }
 
-    if (gameRef.current.isGameOver()) {
-      const newStatus = computeStatus();
-      setStatus(newStatus);
-      void runAnalysis(newStatus);
-    } else if (gameRef.current.turn() === "b") {
+    if (gameRef.current.turn() === "b") {
       void engineMove();
     }
   }
@@ -200,6 +217,24 @@ export function ChessGame() {
     setGameId(crypto.randomUUID());
   }
 
+  function resign() {
+    if (status !== "playing") return;
+    const newStatus = "black-wins";
+    setStatus(newStatus);
+    void runAnalysis(newStatus);
+  }
+
+  function testWin() {
+    if (status !== "playing") return;
+    // Set a position near mate where white can deliver it in one move
+    // White: Ka6, Qh1; Black: Ka8
+    gameRef.current.load("k7/8/K7/8/8/8/8/7Q w - - 0 1");
+    // Deliver mate to ensure there is at least one move in the history
+    gameRef.current.move("Qa8#");
+    setFen(gameRef.current.fen());
+    void afterMove(0);
+  }
+
   const boardOptions = useMemo(
     () => ({
       position: fen,
@@ -231,23 +266,44 @@ export function ChessGame() {
         </div>
 
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-sm text-ink-500">
-            {thinking
-              ? "Engine thinking..."
-              : status === "playing"
-                ? "Your move"
-                : status === "white-wins"
-                  ? "🎉 You won!"
-                  : status === "black-wins"
-                    ? "💀 Lost"
-                    : "🤝 Draw"}
-          </span>
-          <button
-            onClick={reset}
-            className="px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-400 text-white text-sm font-medium"
-          >
-            New game
-          </button>
+          <div className="flex gap-2 items-center">
+            <span className="text-sm text-ink-500">
+              {thinking
+                ? "Engine thinking..."
+                : status === "playing"
+                  ? "Your move"
+                  : status === "white-wins"
+                    ? "🎉 You won!"
+                    : status === "black-wins"
+                      ? "💀 Lost"
+                      : "🤝 Draw"}
+            </span>
+            {status === "playing" && (
+              <button
+                onClick={testWin}
+                className="text-[10px] uppercase tracking-wider px-2 py-1 rounded bg-ink-700 hover:bg-ink-600 text-ink-400 transition-colors"
+                title="Debug: Force a winning position"
+              >
+                Test Win
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {status === "playing" && (
+              <button
+                onClick={resign}
+                className="px-4 py-2 rounded-lg bg-ink-700 hover:bg-ink-600 text-ink-100 text-sm font-medium border border-ink-600 transition-colors"
+              >
+                Resign
+              </button>
+            )}
+            <button
+              onClick={reset}
+              className="px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-400 text-white text-sm font-medium transition-colors"
+            >
+              New game
+            </button>
+          </div>
         </div>
       </div>
 
