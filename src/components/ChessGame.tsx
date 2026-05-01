@@ -40,6 +40,11 @@ export function ChessGame() {
   const [analysis, setAnalysis] = useState<TiltDetectorResponse | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [lastObservation, setLastObservation] = useState<{
+    event: "blunder";
+    payload: any;
+    timestamp: number;
+  } | null>(null);
 
   // Initialize Stockfish once
   useEffect(() => {
@@ -94,18 +99,17 @@ export function ChessGame() {
           const ply = evalPerPlyRef.current.length;
           const lastSan = gameRef.current.history().slice(-1)[0] ?? "";
           const time = timePerPlyRef.current.slice(-1)[0] ?? 0;
-          void agentApi
-            .observe(gameId, "blunder", {
+          setLastObservation({
+            event: "blunder",
+            payload: {
               ply,
               san: lastSan,
               eval_before: evalBefore,
               eval_after: mateAdjusted,
               time_taken: time,
-            })
-            .then(async (r) => {
-              const reader = r.body?.getReader();
-              while (reader && !(await reader.read()).done) {}
-            });
+            },
+            timestamp: Date.now(),
+          });
         }
       }
     }
@@ -214,6 +218,7 @@ export function ChessGame() {
     setStatus("playing");
     setAnalysis(null);
     setAnalysisError(null);
+    setLastObservation(null);
     setGameId(crypto.randomUUID());
   }
 
@@ -320,7 +325,11 @@ export function ChessGame() {
             </button>
           </div>
         )}
-        <AgentChat threadId={gameId} tiltReport={analysis} />
+        <AgentChat 
+          threadId={gameId} 
+          tiltReport={analysis} 
+          lastObservation={lastObservation} 
+        />
       </aside>
     </div>
   );

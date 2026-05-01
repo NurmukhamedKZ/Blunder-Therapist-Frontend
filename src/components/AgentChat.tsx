@@ -9,12 +9,13 @@ import { AgentMessage, type ChatMessage } from "./AgentMessage";
 interface Props {
   threadId: string;
   tiltReport: TiltDetectorResponse | null;
+  lastObservation?: { event: "blunder"; payload: any; timestamp: number } | null;
 }
 
 let _id = 0;
 const nextId = () => `m${++_id}`;
 
-export function AgentChat({ threadId, tiltReport }: Props) {
+export function AgentChat({ threadId, tiltReport, lastObservation }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -96,6 +97,18 @@ export function AgentChat({ threadId, tiltReport }: Props) {
       .then((r) => consumeStream(r))
       .catch(() => {});
   }, [tiltReport, threadId, consumeStream]);
+
+  // React to external observations (like blunders)
+  const lastObsRef = useRef<number>(0);
+  useEffect(() => {
+    if (!lastObservation || lastObservation.timestamp <= lastObsRef.current) return;
+    lastObsRef.current = lastObservation.timestamp;
+
+    agentApi
+      .observe(threadId, lastObservation.event, lastObservation.payload)
+      .then((r) => consumeStream(r))
+      .catch(() => {});
+  }, [lastObservation, threadId, consumeStream]);
 
   // Close session on unmount + beforeunload
   useEffect(() => {
