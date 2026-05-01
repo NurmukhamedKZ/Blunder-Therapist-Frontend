@@ -1,8 +1,41 @@
-/**
- * Typed client for the Blunder Therapist FastAPI backend.
- */
+import { createClient } from "@/lib/supabase/client";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return {};
+  return { Authorization: `Bearer ${session.access_token}` };
+}
+
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const auth = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...auth },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${path} failed: ${res.status} ${text}`);
+  }
+  return res.json();
+}
+
+async function get<T>(path: string): Promise<T> {
+  const auth = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { ...auth },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${path} failed: ${res.status} ${text}`);
+  }
+  return res.json();
+}
 
 export interface AnalyzeGameRequest {
   pgn: string;
@@ -34,34 +67,32 @@ export interface ChatTurn {
   content: string;
 }
 
-async function post<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API ${path} failed: ${res.status} ${text}`);
-  }
-  return res.json();
+export interface GameSummary {
+  id: string;
+  player_color: string;
+  result: string;
+  played_at: string;
+  tilt_report: TiltDetectorResponse | null;
+}
+
+export interface GameListResponse {
+  games: GameSummary[];
+  total: number;
 }
 
 export const api = {
   analyzeGame: (req: AnalyzeGameRequest) =>
     post<TiltDetectorResponse>("/api/analyze-game", req),
 
-  decisionDNA: (games: AnalyzeGameRequest[]) =>
-    post<DecisionDNAResponse>("/api/decision-dna", { games }),
+  decisionDNA: (n = 5) =>
+    post<DecisionDNAResponse>("/api/decision-dna", { n }),
 
-  coachChat: (
-    message: string,
-    history: ChatTurn[],
-    recentGames: AnalyzeGameRequest[]
-  ) =>
-    post<{ reply: string }>("/api/coach", {
-      message,
-      history,
-      recent_games: recentGames,
-    }),
+  coachChat: (message: string, history: ChatTurn[]) =>
+    post<{ reply: string }>("/api/coach", { message, history }),
+
+  listGames: (page = 1) =>
+    get<GameListResponse>(`/api/games?page=${page}`),
+
+  getGame: (id: string) =>
+    get<GameSummary>(`/api/games/${id}`),
 };
