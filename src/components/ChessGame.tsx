@@ -32,6 +32,7 @@ export function ChessGame() {
   const timePerPlyRef = useRef<number[]>([]);
   const lastMoveStartRef = useRef<number>(Date.now());
   const prevEvalRef = useRef<number>(0);
+  const lastObservePlyRef = useRef<number>(0);
 
   const [fen, setFen] = useState(gameRef.current.fen());
   const [status, setStatus] = useState<Status>("playing");
@@ -40,6 +41,7 @@ export function ChessGame() {
   const [analysis, setAnalysis] = useState<TiltDetectorResponse | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [gameHistory, setGameHistory] = useState<Array<{ ply: number; san: string; eval_after: number; time_sec: number }>>([]);
   const [lastObservation, setLastObservation] = useState<{
     event: "blunder";
     payload: any;
@@ -96,17 +98,34 @@ export function ChessGame() {
       if (playerJustMoved === "white") {
         const evt = classifyPly(evalBefore, mateAdjusted, "white");
         if (evt === "blunder") {
-          const ply = evalPerPlyRef.current.length;
-          const lastSan = gameRef.current.history().slice(-1)[0] ?? "";
-          const time = timePerPlyRef.current.slice(-1)[0] ?? 0;
+          const currentPlyIdx = evalPerPlyRef.current.length - 1;
+          const allHistory = gameRef.current.history();
+          const lastSan = allHistory[currentPlyIdx] ?? "";
+          const time = timePerPlyRef.current[currentPlyIdx] ?? 0;
+
+          const movesSince = allHistory
+            .slice(lastObservePlyRef.current, currentPlyIdx + 1)
+            .map((san, i) => {
+              const idx = lastObservePlyRef.current + i;
+              return {
+                ply: idx,
+                san,
+                eval_after: evalPerPlyRef.current[idx] ?? 0,
+                time_sec: timePerPlyRef.current[idx] ?? 0,
+              };
+            });
+
+          lastObservePlyRef.current = currentPlyIdx + 1;
+
           setLastObservation({
             event: "blunder",
             payload: {
-              ply,
+              ply: currentPlyIdx,
               san: lastSan,
               eval_before: evalBefore,
               eval_after: mateAdjusted,
               time_taken: time,
+              moves_since_last_observe: movesSince,
             },
             timestamp: Date.now(),
           });
@@ -197,6 +216,15 @@ export function ChessGame() {
         result,
         client_game_id: gameId,
       };
+      const history = gameRef.current.history();
+      setGameHistory(
+        history.map((san, i) => ({
+          ply: i,
+          san,
+          eval_after: evalPerPlyRef.current[i] ?? 0,
+          time_sec: timePerPlyRef.current[i] ?? 0,
+        })),
+      );
       const r = await api.analyzeGame(req);
       setAnalysis(r);
     } catch (e) {
@@ -214,11 +242,13 @@ export function ChessGame() {
     timePerPlyRef.current = [];
     prevEvalRef.current = 0;
     lastMoveStartRef.current = Date.now();
+    lastObservePlyRef.current = 0;
     setFen(gameRef.current.fen());
     setStatus("playing");
     setAnalysis(null);
     setAnalysisError(null);
     setLastObservation(null);
+    setGameHistory([]);
     setGameId(crypto.randomUUID());
   }
 
@@ -325,10 +355,11 @@ export function ChessGame() {
             </button>
           </div>
         )}
-        <AgentChat 
-          threadId={gameId} 
-          tiltReport={analysis} 
-          lastObservation={lastObservation} 
+        <AgentChat
+          threadId={gameId}
+          tiltReport={analysis}
+          lastObservation={lastObservation}
+          gameHistory={gameHistory}
         />
       </aside>
     </div>

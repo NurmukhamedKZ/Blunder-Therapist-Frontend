@@ -10,12 +10,13 @@ interface Props {
   threadId: string;
   tiltReport: TiltDetectorResponse | null;
   lastObservation?: { event: "blunder"; payload: any; timestamp: number } | null;
+  gameHistory?: Array<{ ply: number; san: string; eval_after: number; time_sec: number }>;
 }
 
 let _id = 0;
 const nextId = () => `m${++_id}`;
 
-export function AgentChat({ threadId, tiltReport, lastObservation }: Props) {
+export function AgentChat({ threadId, tiltReport, lastObservation, gameHistory }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -93,7 +94,7 @@ export function AgentChat({ threadId, tiltReport, lastObservation }: Props) {
     tiltSeenRef.current = threadId;
     setMessages((m) => [...m, { id: nextId(), kind: "tilt_card", report: tiltReport }]);
     agentApi
-      .observe(threadId, "game_end", { game_id: threadId })
+      .observe(threadId, "game_end", { game_id: threadId, all_moves: gameHistory ?? [] })
       .then((r) => consumeStream(r))
       .catch(() => {});
   }, [tiltReport, threadId, consumeStream]);
