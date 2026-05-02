@@ -137,6 +137,16 @@ export function ChessGame() {
     if (gameRef.current.turn() === "b") {
       void engineMove();
     }
+
+    // Update live history for the MoveList
+    setGameHistory(
+      gameRef.current.history().map((san, i) => ({
+        ply: i,
+        san,
+        eval_after: evalPerPlyRef.current[i] ?? 0,
+        time_sec: timePerPlyRef.current[i] ?? 0,
+      }))
+    );
   }
 
   function computeStatus(): Status {

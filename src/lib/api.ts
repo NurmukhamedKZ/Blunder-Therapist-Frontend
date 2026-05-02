@@ -141,3 +141,26 @@ export const agentApi = {
   history: (thread_id: string) =>
     get<{ messages: AgentHistoryMessage[] }>(`/api/agent/history/${thread_id}`),
 };
+
+
+// ---------- Import API ----------
+
+export interface ImportJobStatus {
+  job_id: string;
+  status: "pending" | "running" | "done" | "failed";
+  total_games: number;
+  processed_games: number;
+  error: string | null;
+  finished_at: string | null;
+}
+
+export const importApi = {
+  create: (platform: "chess.com" | "lichess", username: string, period_days: 30 | 90) =>
+    post<ImportJobStatus>("/api/import", { platform, username, period_days }),
+
+  status: (job_id: string) =>
+    get<ImportJobStatus>(`/api/import/${job_id}`),
+
+  list: () =>
+    get<{ jobs: ImportJobStatus[] }>("/api/import"),
+};

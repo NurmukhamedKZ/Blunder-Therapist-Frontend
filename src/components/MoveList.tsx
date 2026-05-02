@@ -46,8 +46,10 @@ export function MoveList({ history }: MoveListProps) {
     // If it's a mate, eval might be very high (e.g. 9999)
     if (evaluation > 9000) return "+M";
     if (evaluation < -9000) return "-M";
-    const prefix = evaluation > 0 ? "+" : "";
-    return `${prefix}${evaluation.toFixed(1)}`;
+    
+    const pawns = evaluation / 100;
+    const prefix = pawns > 0 ? "+" : "";
+    return `${prefix}${pawns.toFixed(1)}`;
   }
 
   return (
