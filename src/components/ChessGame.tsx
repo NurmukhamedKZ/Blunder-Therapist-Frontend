@@ -19,6 +19,7 @@ import { api, agentApi, type AnalyzeGameRequest, type TiltDetectorResponse } fro
 import { classifyPly } from "@/lib/event-detector";
 import { TiltReport } from "./TiltReport";
 import { AgentChat } from "./AgentChat";
+import { MoveList } from "./MoveList";
 
 type Status = "playing" | "white-wins" | "black-wins" | "draw";
 
@@ -282,85 +283,94 @@ export function ChessGame() {
   );
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto p-6">
-      <div className="flex-1 max-w-[600px]">
-        <Chessboard options={boardOptions} />
-
-        <div className="mt-4 flex items-center gap-3 text-sm">
-          <label className="text-ink-500">Opponent strength:</label>
-          <input
-            type="range"
-            min={0}
-            max={20}
-            value={skillLevel}
-            onChange={(e) => setSkillLevel(parseInt(e.target.value))}
-            disabled={status !== "playing" && gameRef.current.history().length > 0}
-            className="flex-1"
-          />
-          <span className="font-mono w-8 text-right">{skillLevel}</span>
+    <div className="flex flex-col lg:flex-row gap-6 w-full h-full p-4 lg:p-8 mx-auto max-w-[1600px] items-stretch">
+      <div className="flex-1 flex flex-col items-center justify-center min-w-0 w-full">
+        <div className="w-full max-w-[700px] shrink-0 rounded-md overflow-hidden shadow-2xl shadow-black/50">
+          <Chessboard options={boardOptions} />
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex gap-2 items-center">
-            <span className="text-sm text-ink-500">
-              {thinking
-                ? "Engine thinking..."
-                : status === "playing"
-                  ? "Your move"
-                  : status === "white-wins"
-                    ? "🎉 You won!"
-                    : status === "black-wins"
-                      ? "💀 Lost"
-                      : "🤝 Draw"}
-            </span>
-            {status === "playing" && (
-              <button
-                onClick={testWin}
-                className="text-[10px] uppercase tracking-wider px-2 py-1 rounded bg-ink-700 hover:bg-ink-600 text-ink-400 transition-colors"
-                title="Debug: Force a winning position"
-              >
-                Test Win
-              </button>
-            )}
+        <div className="w-full max-w-[700px] mt-6 flex flex-col gap-4 shrink-0">
+          <div className="flex items-center gap-3 text-sm bg-ink-800 p-4 rounded-xl border border-ink-700 shadow-sm">
+            <label className="text-ink-400 font-medium whitespace-nowrap">Opponent strength:</label>
+            <input
+              type="range"
+              min={0}
+              max={20}
+              value={skillLevel}
+              onChange={(e) => setSkillLevel(parseInt(e.target.value))}
+              disabled={status !== "playing" && gameRef.current.history().length > 0}
+              className="flex-1 accent-accent-500"
+            />
+            <span className="font-mono w-8 text-right text-white font-medium">{skillLevel}</span>
           </div>
-          <div className="flex gap-2">
-            {status === "playing" && (
+
+          <div className="flex items-center justify-between bg-ink-800 p-4 rounded-xl border border-ink-700 shadow-sm">
+            <div className="flex gap-2 items-center">
+              <span className="text-sm font-medium text-white">
+                {thinking
+                  ? "Engine thinking..."
+                  : status === "playing"
+                    ? "Your move"
+                    : status === "white-wins"
+                      ? "🎉 You won!"
+                      : status === "black-wins"
+                        ? "💀 Lost"
+                        : "🤝 Draw"}
+              </span>
+              {status === "playing" && (
+                <button
+                  onClick={testWin}
+                  className="text-[10px] uppercase tracking-wider px-2 py-1 rounded bg-ink-700 hover:bg-ink-600 text-ink-400 transition-colors"
+                  title="Debug: Force a winning position"
+                >
+                  Test Win
+                </button>
+              )}
+            </div>
+            <div className="flex gap-3">
+              {status === "playing" && (
+                <button
+                  onClick={resign}
+                  className="px-4 py-2 rounded-lg bg-ink-700 hover:bg-ink-600 text-ink-300 hover:text-signal-red text-sm font-medium transition-colors"
+                >
+                  Resign
+                </button>
+              )}
               <button
-                onClick={resign}
-                className="px-4 py-2 rounded-lg bg-ink-700 hover:bg-ink-600 text-ink-100 text-sm font-medium border border-ink-600 transition-colors"
+                onClick={reset}
+                className="px-5 py-2 rounded-lg bg-accent-500 hover:bg-accent-400 text-white text-sm font-medium transition-all shadow-md shadow-accent-500/20"
               >
-                Resign
+                New game
               </button>
-            )}
-            <button
-              onClick={reset}
-              className="px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-400 text-white text-sm font-medium transition-colors"
-            >
-              New game
-            </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <aside className="flex-1 lg:max-w-md">
+      <aside className="w-full lg:w-[400px] xl:w-[480px] shrink-0 flex flex-col gap-4 h-[800px] lg:h-auto lg:min-h-0">
         {analysisError && !analyzing && (
-          <div className="rounded-2xl bg-ink-700 border border-signal-red p-4 mb-3">
+          <div className="rounded-2xl bg-ink-700 border border-signal-red p-4 shrink-0">
             <p className="text-signal-red text-sm font-medium mb-1">Analysis failed</p>
             <p className="text-ink-500 text-xs leading-relaxed">{analysisError}</p>
             <button
               onClick={() => runAnalysis(status)}
-              className="mt-3 px-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-400 text-white text-xs font-medium"
+              className="mt-3 px-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-400 text-white text-xs font-medium shadow-sm"
             >
               Retry
             </button>
           </div>
         )}
-        <AgentChat
-          threadId={gameId}
-          tiltReport={analysis}
-          lastObservation={lastObservation}
-          gameHistory={gameHistory}
-        />
+        <div className="flex-[3] min-h-0 overflow-hidden shadow-lg shadow-black/20 rounded-2xl">
+          <AgentChat
+            threadId={gameId}
+            tiltReport={analysis}
+            lastObservation={lastObservation}
+            gameHistory={gameHistory}
+          />
+        </div>
+        <div className="flex-[2] min-h-0 overflow-hidden shadow-lg shadow-black/20 rounded-2xl">
+          <MoveList history={gameHistory} />
+        </div>
       </aside>
     </div>
   );

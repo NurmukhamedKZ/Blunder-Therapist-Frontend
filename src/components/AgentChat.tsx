@@ -140,7 +140,7 @@ export function AgentChat({ threadId, tiltReport, lastObservation, gameHistory }
   }
 
   return (
-    <div className="flex flex-col h-[600px] rounded-2xl bg-ink-800 border border-ink-600">
+    <div className="flex flex-col h-full rounded-2xl bg-ink-800 border border-ink-600 overflow-hidden">
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 && (
           <div className="text-ink-500 text-sm italic">I&apos;m watching. Ask me anything.</div>

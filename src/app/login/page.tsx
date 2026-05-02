@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+import { Suspense } from "react";
+
+function LoginForm() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,9 +45,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ink-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-ink-900 flex items-center justify-center px-4 w-full">
       <div className="w-full max-w-sm">
-        <h1 className="font-display text-2xl tracking-tight mb-2 text-center">
+        <h1 className="font-display text-2xl tracking-tight mb-2 text-center text-white">
           Blunder<span className="text-accent-500">.</span>Therapist
         </h1>
         <p className="text-ink-500 text-sm text-center mb-8">
@@ -60,7 +62,7 @@ export default function LoginPage() {
 
         <button
           onClick={handleGoogle}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-ink-600 hover:border-ink-500 transition mb-6 text-sm font-medium"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-ink-600 hover:border-ink-500 hover:bg-ink-800 transition mb-6 text-sm font-medium text-white"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden>
             <path
@@ -96,7 +98,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full bg-ink-800 border border-ink-700 rounded-lg px-4 py-3 text-sm placeholder-ink-500 focus:outline-none focus:border-accent-500 transition"
+            className="w-full bg-ink-800 border border-ink-700 rounded-lg px-4 py-3 text-sm placeholder-ink-500 text-white focus:outline-none focus:border-accent-500 transition"
           />
           <input
             type="password"
@@ -104,12 +106,12 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full bg-ink-800 border border-ink-700 rounded-lg px-4 py-3 text-sm placeholder-ink-500 focus:outline-none focus:border-accent-500 transition"
+            className="w-full bg-ink-800 border border-ink-700 rounded-lg px-4 py-3 text-sm placeholder-ink-500 text-white focus:outline-none focus:border-accent-500 transition"
           />
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent-500 hover:bg-accent-400 disabled:opacity-50 text-white px-4 py-3 rounded-lg text-sm font-medium transition"
+            className="w-full bg-accent-500 hover:bg-accent-400 disabled:opacity-50 text-white px-4 py-3 rounded-lg text-sm font-medium transition shadow-sm shadow-accent-500/20"
           >
             {loading
               ? "Loading…"
@@ -132,5 +134,17 @@ export default function LoginPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-ink-900 flex items-center justify-center px-4">
+        <p className="text-ink-500 text-sm">Loading...</p>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
