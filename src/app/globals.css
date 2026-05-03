@@ -4,13 +4,42 @@
 
 :root {
   color-scheme: light;
+  --bg-app: #ede8e0;
+  --bg-sidebar: #f5f0ea;
+  --bg-card: #ffffff;
+  --bg-card-hover: rgba(160, 114, 74, 0.05);
+  --text-main: #2c1f14;
+  --text-muted: #7a6454;
+  --accent: #a0724a;
+  --accent-soft: rgba(160, 114, 74, 0.1);
+  --board-frame: #ede8e0;
+  --border: rgba(44, 31, 20, 0.08);
+  --border-soft: rgba(44, 31, 20, 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-app: #1c1610;
+  --bg-sidebar: #17120d;
+  --bg-card: #261e16;
+  --bg-card-hover: rgba(196, 154, 108, 0.05);
+  --text-main: #f2ede6;
+  --text-muted: #9a8472;
+  --accent: #c49a6c;
+    --accent-soft: rgba(196, 154, 108, 0.12);
+    --board-frame: #3a2a1d;
+    --border: rgba(242, 237, 230, 0.09);
+    --border-soft: rgba(242, 237, 230, 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
 }
 
 html, body {
-  background: #ede8e0;
-  color: #2c1f14;
+  background: var(--bg-app);
+  color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   font-family: var(--font-dm-sans), sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, h5, h6, .font-display {

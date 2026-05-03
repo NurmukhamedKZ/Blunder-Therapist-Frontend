@@ -35,10 +35,10 @@ export function MoveList({ history }: MoveListProps) {
   }, [history]);
 
   function getEvalColor(evaluation?: number) {
-    if (evaluation === undefined) return "text-ink-500";
-    if (evaluation > 1) return "text-white";
-    if (evaluation < -1) return "text-white";
-    return "text-ink-400";
+    if (evaluation === undefined) return "text-[var(--text-muted)]";
+    if (evaluation > 1) return "text-[var(--text-main)]";
+    if (evaluation < -1) return "text-[var(--text-main)]";
+    return "text-[var(--text-muted)]";
   }
 
   function formatEval(evaluation?: number) {
@@ -53,37 +53,37 @@ export function MoveList({ history }: MoveListProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-3xl border border-[#2c1f14]/5 overflow-hidden shadow-inner">
-      <div className="px-6 py-4 border-b border-[#2c1f14]/5 bg-white/80 backdrop-blur-sm shrink-0 flex justify-between items-center">
-        <h3 className="font-display text-[#2c1f14] text-lg">Game History</h3>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-[#7a6454] bg-[#f5f0ea] px-3 py-1 rounded-full border border-[#2c1f14]/5">
+    <div className="flex flex-col h-full bg-[var(--bg-sidebar)] rounded-3xl border border-[var(--border)] overflow-hidden shadow-inner">
+      <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--bg-card)]/80 backdrop-blur-sm shrink-0 flex justify-between items-center">
+        <h3 className="font-display text-[var(--text-main)] text-lg">Game History</h3>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] bg-[var(--bg-app)] px-3 py-1 rounded-full border border-[var(--border)]">
           {history.length} moves
         </span>
       </div>
       
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 scroll-smooth">
         {movePairs.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-[#7a6454]/40 text-sm italic">
+          <div className="flex h-full items-center justify-center text-[var(--text-muted)]/40 text-sm italic">
             No moves played yet.
           </div>
         ) : (
           <div className="grid grid-cols-[3rem_1fr_1fr] gap-x-2 gap-y-1 text-sm font-mono">
             {movePairs.map((pair) => (
               <div key={pair.moveNumber} className="contents group">
-                <div className="py-2 px-2 text-right text-[#7a6454]/40 border-r border-[#2c1f14]/5 select-none flex items-center justify-end font-medium">
+                <div className="py-2 px-2 text-right text-[var(--text-muted)]/40 border-r border-[var(--border)] select-none flex items-center justify-end font-medium">
                   {pair.moveNumber}.
                 </div>
                 
-                <div className="py-2 px-3 rounded-xl hover:bg-[#f5f0ea] transition-colors flex items-center justify-between group-hover:bg-[#f5f0ea]/50">
-                  <span className="font-bold text-[#2c1f14]">{pair.white.san}</span>
+                <div className="py-2 px-3 rounded-xl hover:bg-[var(--bg-card-hover)] transition-colors flex items-center justify-between group-hover:bg-[var(--bg-card-hover)]">
+                  <span className="font-bold text-[var(--text-main)]">{pair.white.san}</span>
                   <span className={clsx("text-[10px] font-bold", getEvalColor(pair.white.eval_after))}>
                     {formatEval(pair.white.eval_after)}
                   </span>
                 </div>
                 
                 {pair.black ? (
-                  <div className="py-2 px-3 rounded-xl hover:bg-[#f5f0ea] transition-colors flex items-center justify-between group-hover:bg-[#f5f0ea]/50">
-                    <span className="font-bold text-[#2c1f14]">{pair.black.san}</span>
+                  <div className="py-2 px-3 rounded-xl hover:bg-[var(--bg-card-hover)] transition-colors flex items-center justify-between group-hover:bg-[var(--bg-card-hover)]">
+                    <span className="font-bold text-[var(--text-main)]">{pair.black.san}</span>
                     <span className={clsx("text-[10px] font-bold", getEvalColor(pair.black.eval_after))}>
                       {formatEval(pair.black.eval_after)}
                     </span>

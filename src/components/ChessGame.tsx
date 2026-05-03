@@ -20,10 +20,12 @@ import { classifyPly } from "@/lib/event-detector";
 import { TiltReport } from "./TiltReport";
 import { AgentChat } from "./AgentChat";
 import { MoveList } from "./MoveList";
+import { useTheme } from "@/components/ThemeProvider";
 
 type Status = "playing" | "white-wins" | "black-wins" | "draw";
 
 export function ChessGame() {
+  const { theme } = useTheme();
   const [gameId, setGameId] = useState<string>(() => crypto.randomUUID());
 
   const gameRef = useRef(new Chess());
@@ -286,22 +288,22 @@ export function ChessGame() {
       position: fen,
       onPieceDrop: handlePieceDrop,
       boardOrientation: "white" as const,
-      darkSquareStyle: { backgroundColor: "#a0724a" },
-      lightSquareStyle: { backgroundColor: "#ede8e0" },
+      darkSquareStyle: { backgroundColor: theme === "light" ? "#b58863" : "#a07a58" },
+      lightSquareStyle: { backgroundColor: theme === "light" ? "#f0d9b5" : "#decba4" },
     }),
-    [fen]
+    [fen, theme]
   );
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 w-full h-full p-4 lg:p-10 mx-auto max-w-[1600px] items-stretch bg-[#ede8e0]">
+    <div className="flex flex-col lg:flex-row gap-8 w-full h-full p-4 lg:p-10 mx-auto max-w-[1600px] items-stretch bg-[var(--bg-app)]">
       <div className="flex-1 flex flex-col items-center justify-center min-w-0 w-full">
-        <div className="w-full max-w-[700px] shrink-0 rounded-3xl overflow-hidden shadow-2xl shadow-[#2c1f14]/20 border-8 border-white">
+        <div className="w-full max-w-[700px] shrink-0 rounded-3xl overflow-hidden shadow-2xl shadow-black/40 border-[12px] border-[var(--board-frame)] transition-colors">
           <Chessboard options={boardOptions} />
         </div>
 
         <div className="w-full max-w-[700px] mt-8 flex flex-col gap-4 shrink-0">
-          <div className="flex items-center gap-6 text-sm bg-white p-6 rounded-3xl border border-[#2c1f14]/5 shadow-xl shadow-[#2c1f14]/5">
-            <label className="text-[#7a6454] font-bold uppercase tracking-widest text-[10px] whitespace-nowrap">Opponent Strength</label>
+          <div className="flex items-center gap-6 text-sm bg-[var(--bg-card)] p-6 rounded-3xl border border-[var(--border)] shadow-xl shadow-black/5">
+            <label className="text-[var(--text-muted)] font-bold uppercase tracking-widest text-[10px] whitespace-nowrap">Opponent Strength</label>
             <input
               type="range"
               min={0}
@@ -309,16 +311,16 @@ export function ChessGame() {
               value={skillLevel}
               onChange={(e) => setSkillLevel(parseInt(e.target.value))}
               disabled={status !== "playing" && gameRef.current.history().length > 0}
-              className="flex-1 accent-[#a0724a] h-1.5 bg-[#f5f0ea] rounded-full appearance-none cursor-pointer"
+              className="flex-1 accent-[var(--accent)] h-1.5 bg-[var(--bg-app)] rounded-full appearance-none cursor-pointer"
             />
-            <span className="font-display w-10 text-right text-[#2c1f14] font-bold text-xl">{skillLevel}</span>
+            <span className="font-display w-10 text-right text-[var(--text-main)] font-bold text-xl">{skillLevel}</span>
           </div>
 
-          <div className="flex items-center justify-between bg-white p-6 rounded-3xl border border-[#2c1f14]/5 shadow-xl shadow-[#2c1f14]/5">
+          <div className="flex items-center justify-between bg-[var(--bg-card)] p-6 rounded-3xl border border-[var(--border)] shadow-xl shadow-black/5">
             <div className="flex gap-4 items-center">
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a6454] mb-1">Game Status</span>
-                <span className="text-xl font-display text-[#2c1f14]">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] mb-1">Game Status</span>
+                <span className="text-xl font-display text-[var(--text-main)]">
                   {thinking
                     ? "Coach is thinking..."
                     : status === "playing"
@@ -333,7 +335,7 @@ export function ChessGame() {
               {status === "playing" && (
                 <button
                   onClick={testWin}
-                  className="text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-[#f5f0ea] hover:bg-[#ede8e0] text-[#7a6454] transition-all ml-2"
+                  className="text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-[var(--bg-app)] hover:opacity-80 text-[var(--text-muted)] transition-all ml-2"
                   title="Debug: Force a winning position"
                 >
                   Test Win
@@ -344,14 +346,14 @@ export function ChessGame() {
               {status === "playing" && (
                 <button
                   onClick={resign}
-                  className="px-6 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold transition-all"
+                  className="px-6 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-bold transition-all"
                 >
                   Resign
                 </button>
               )}
               <button
                 onClick={reset}
-                className="px-8 py-2.5 rounded-xl bg-[#2c1f14] hover:bg-[#1a130d] text-white text-sm font-bold transition-all shadow-lg shadow-black/10"
+                className="px-8 py-2.5 rounded-xl bg-[var(--accent)] hover:opacity-90 text-[var(--bg-app)] text-sm font-bold transition-all shadow-lg shadow-black/10"
               >
                 New Game
               </button>
@@ -373,7 +375,7 @@ export function ChessGame() {
             </button>
           </div>
         )}
-        <div className="flex-[3] min-h-0 overflow-hidden shadow-2xl shadow-[#2c1f14]/5 rounded-3xl bg-white p-2">
+        <div className="flex-[3] min-h-0 overflow-hidden shadow-2xl shadow-black/5 rounded-3xl bg-[var(--bg-card)] p-2">
           <AgentChat
             threadId={gameId}
             tiltReport={analysis}
@@ -381,7 +383,7 @@ export function ChessGame() {
             gameHistory={gameHistory}
           />
         </div>
-        <div className="flex-[2] min-h-0 overflow-hidden shadow-2xl shadow-[#2c1f14]/5 rounded-3xl bg-white p-2">
+        <div className="flex-[2] min-h-0 overflow-hidden shadow-2xl shadow-black/5 rounded-3xl bg-[var(--bg-card)] p-2">
           <MoveList history={gameHistory} />
         </div>
       </aside>

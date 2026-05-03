@@ -63,6 +63,13 @@ export interface DecisionDNAResponse {
   gm_comparison: { name: string; similarity_pct: number; why: string };
 }
 
+export interface UserProfile {
+  user_id: string;
+  plan: string;
+  games_count: number;
+  games_limit: number | null;
+}
+
 export interface ChatTurn {
   role: "user" | "assistant";
   content: string;
@@ -98,8 +105,11 @@ export const api = {
   listGames: (page = 1) =>
     get<GameListResponse>(`/api/games?page=${page}`),
 
-  getGame: (id: string) =>
-    get<GameSummary>(`/api/games/${id}`),
+  getProfile: () =>
+    get<UserProfile>("/api/me"),
+
+  upgrade: () =>
+    post<{ status: string; plan: string }>("/api/upgrade", {}),
 };
 
 

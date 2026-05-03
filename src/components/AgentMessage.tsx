@@ -23,7 +23,7 @@ export function AgentMessage({ msg }: { msg: ChatMessage }) {
   if (msg.kind === "user") {
     return (
       <div className="flex justify-end my-2">
-        <div className="rounded-2xl rounded-tr-sm bg-[#2c1f14] text-white px-4 py-2.5 max-w-[85%] text-sm shadow-md">
+        <div className="rounded-2xl rounded-tr-sm bg-[var(--accent)] text-[var(--bg-app)] px-4 py-2.5 max-w-[85%] text-sm shadow-md">
           {msg.text}
         </div>
       </div>
@@ -31,9 +31,9 @@ export function AgentMessage({ msg }: { msg: ChatMessage }) {
   }
   return (
     <div className="flex justify-start my-2">
-      <div className="rounded-2xl rounded-tl-sm bg-white border border-[#2c1f14]/5 text-[#2c1f14] px-4 py-2.5 max-w-[85%] text-sm shadow-sm whitespace-pre-wrap">
+      <div className="rounded-2xl rounded-tl-sm bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] px-4 py-2.5 max-w-[85%] text-sm shadow-sm whitespace-pre-wrap">
         {msg.text}
-        {msg.pending && <span className="animate-pulse text-[#a0724a] ml-1">▍</span>}
+        {msg.pending && <span className="animate-pulse text-[var(--accent)] ml-1">▍</span>}
       </div>
     </div>
   );

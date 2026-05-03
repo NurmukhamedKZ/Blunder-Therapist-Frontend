@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blunder Therapist — Chess Psychology Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: #1c1610;
+      color: #f0ebe3;
+      font-family: 'DM Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    ::selection { background: #c49a6c40; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel">
+
+/* ─── Dark palette tokens ─── */
+const D = {
+  bg:       '#1c1610',
+  bgCard:   '#261e16',
+  bgCard2:  '#2f251b',
+  bgDark:   '#3a2e22',
+  text:     '#f2ede6',
+  muted:    '#9a8472',
+  dimmed:   'rgba(242,237,230,0.5)',
+  border:   'rgba(242,237,230,0.09)',
+  borderMd: 'rgba(242,237,230,0.15)',
+};
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "#c49a6c",
+  "showGMComparison": true,
+  "ctaLabel": "Start Your Journey"
+}/*EDITMODE-END*/;
+
+/* ── Icons ── */
+const IconDNA = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <path d="M9 4 C9 10 19 10 19 16 C19 22 9 22 9 16" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+    <path d="M19 4 C19 10 9 10 9 16 C9 22 19 22 19 16" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+    <line x1="9" y1="10" x2="19" y2="10" stroke="currentColor" strokeWidth="1.2" opacity="0.5"/>
+    <line x1="9" y1="14" x2="19" y2="14" stroke="currentColor" strokeWidth="1.2" opacity="0.5"/>
+    <line x1="9" y1="18" x2="19" y2="18" stroke="currentColor" strokeWidth="1.2" opacity="0.5"/>
+  </svg>
+);
+const IconFire = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <path d="M14 24 C8 24 5 19 7 14 C8 11 10 9 10 6 C12 8 12 10 14 10 C14 7 16 5 18 3 C20 8 22 12 20 17 C19 21 17 24 14 24Z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round"/>
+    <circle cx="14" cy="18" r="2.5" stroke="currentColor" strokeWidth="1.4" fill="none"/>
+  </svg>
+);
+const IconChat = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <rect x="4" y="5" width="20" height="14" rx="3" stroke="currentColor" strokeWidth="1.6" fill="none"/>
+    <path d="M8 23 L10 19 H18 L20 23" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
+    <line x1="8" y1="10" x2="20" y2="10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    <line x1="8" y1="14" x2="16" y2="14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>
+);
+const IconArrow = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <line x1="3" y1="9" x2="15" y2="9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+    <polyline points="10,5 15,9 10,13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+  </svg>
+);
+
+const ChessLogo = ({ size = 22, color = 'currentColor' }) => {
+  const cells = [];
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if ((r + c) % 2 === 0) cells.push(
+        <rect key={`${r}-${c}`} x={c*(size/4)} y={r*(size/4)} width={size/4} height={size/4} fill={color}/>
+      );
+    }
+  }
+  return <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>{cells}</svg>;
+};
+
+/* ── Nav ── */
+const Nav = ({ accent, ctaLabel }) => {
+  const [scrolled, setScrolled] = React.useState(false);
+  React.useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', fn);
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  return (
+    <nav style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+      padding: '0 48px', height: 64,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      background: scrolled ? 'rgba(14,11,8,0.92)' : 'transparent',
+      backdropFilter: scrolled ? 'blur(16px)' : 'none',
+      borderBottom: scrolled ? `1px solid ${D.border}` : '1px solid transparent',
+      transition: 'all 0.3s ease',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: D.text }}>
+        <ChessLogo size={24} color={accent} />
+        <span style={{ fontFamily: 'DM Sans', fontWeight: 600, fontSize: 16, letterSpacing: '-0.01em' }}>
+          Blunder Therapist
+        </span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+        {['Features', 'How It Works', 'About'].map(item => (
+          <a key={item} href={`#${item.toLowerCase().replace(' ','-')}`} style={{
+            fontFamily: 'DM Sans', fontSize: 14, color: D.muted,
+            textDecoration: 'none', fontWeight: 400, transition: 'color 0.2s',
+          }}
+          onMouseEnter={e => e.target.style.color = D.text}
+          onMouseLeave={e => e.target.style.color = D.muted}>
+            {item}
+          </a>
+        ))}
+        <button style={{
+          background: accent, color: '#0e0b08',
+          border: 'none', borderRadius: 100, padding: '9px 22px',
+          fontFamily: 'DM Sans', fontSize: 14, fontWeight: 600,
+          cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '-0.01em',
+        }}
+        onMouseEnter={e => { e.target.style.opacity = '0.85'; }}
+        onMouseLeave={e => { e.target.style.opacity = '1'; }}>
+          {ctaLabel}
+        </button>
+      </div>
+    </nav>
+  );
+};
+
+/* ── Hero ── */
+const Hero = ({ accent, ctaLabel }) => (
+  <section style={{
+    minHeight: '100vh', display: 'flex', flexDirection: 'column',
+    alignItems: 'center', justifyContent: 'center',
+    padding: '120px 48px 80px', textAlign: 'center', position: 'relative',
+  }}>
+    {/* Board pattern */}
+    <div style={{
+      position: 'absolute', inset: 0, opacity: 0.045, pointerEvents: 'none',
+      backgroundImage: `repeating-conic-gradient(${D.text} 0% 25%, transparent 0% 50%)`,
+      backgroundSize: '40px 40px',
+    }} />
+    {/* Radial glow */}
+    <div style={{
+      position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)',
+      width: 700, height: 700, borderRadius: '50%', pointerEvents: 'none',
+      background: `radial-gradient(circle, ${accent}18 0%, transparent 70%)`,
+    }} />
+
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 8,
+      background: `${accent}14`, border: `1px solid ${accent}30`,
+      borderRadius: 100, padding: '6px 16px', marginBottom: 40,
+      fontSize: 13, fontWeight: 500, color: accent, letterSpacing: '0.02em',
+      position: 'relative',
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, display: 'inline-block' }} />
+      Now in Early Access
+    </div>
+
+    <h1 style={{
+      fontFamily: 'Playfair Display', fontSize: 'clamp(52px, 7vw, 96px)',
+      fontWeight: 500, lineHeight: 1.08, letterSpacing: '-0.02em',
+      color: D.text, maxWidth: 900, marginBottom: 28, position: 'relative',
+      textWrap: 'pretty',
+    }}>
+      Fix Your Psychology,<br />
+      <span style={{ color: accent }}>Not Just Your Openings.</span>
+    </h1>
+
+    <p style={{
+      fontFamily: 'DM Sans', fontSize: 20, fontWeight: 300, lineHeight: 1.6,
+      color: D.muted, maxWidth: 540, marginBottom: 48, position: 'relative',
+    }}>
+      Most chess tools fix your moves. We fix the{' '}
+      <em style={{ fontFamily: 'Playfair Display', fontStyle: 'italic', color: D.text }}>mind</em>{' '}
+      making them. Behavioral AI that studies your tilt patterns, decision tendencies, and psychological triggers across every game you've ever played.
+    </p>
+
+    <div style={{ display: 'flex', alignItems: 'center', gap: 16, position: 'relative' }}>
+      <button style={{
+        background: accent, color: '#0e0b08',
+        border: 'none', borderRadius: 100, padding: '14px 36px',
+        fontFamily: 'DM Sans', fontSize: 16, fontWeight: 600,
+        cursor: 'pointer', transition: 'all 0.25s',
+        display: 'flex', alignItems: 'center', gap: 10, letterSpacing: '-0.01em',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+      onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+        {ctaLabel} <IconArrow />
+      </button>
+      <a href="#features" style={{
+        fontFamily: 'DM Sans', fontSize: 15, color: D.muted,
+        textDecoration: 'none', padding: '14px 20px', transition: 'color 0.2s',
+      }}
+      onMouseEnter={e => e.target.style.color = D.text}
+      onMouseLeave={e => e.target.style.color = D.muted}>
+        See how it works →
+      </a>
+    </div>
+
+    {/* Stats */}
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 0,
+      marginTop: 88, borderTop: `1px solid ${D.border}`, paddingTop: 40,
+      position: 'relative',
+    }}>
+      {[
+        { num: '500K+', label: 'Games Analyzed' },
+        { num: '12ms', label: 'Real-time Detection' },
+        { num: '94%', label: 'Pattern Accuracy' },
+        { num: '3.2×', label: 'Faster Improvement' },
+      ].map((stat, i) => (
+        <React.Fragment key={i}>
+          <div style={{ padding: '0 48px', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'Playfair Display', fontSize: 36, fontWeight: 500, color: D.text, letterSpacing: '-0.02em' }}>{stat.num}</div>
+            <div style={{ fontFamily: 'DM Sans', fontSize: 13, color: D.muted, marginTop: 4, fontWeight: 400 }}>{stat.label}</div>
+          </div>
+          {i < 3 && <div style={{ width: 1, height: 40, background: D.border }} />}
+        </React.Fragment>
+      ))}
+    </div>
+  </section>
+);
+
+/* ── Problem ── */
+const Problem = ({ accent }) => (
+  <section style={{ padding: '120px 48px', maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
+      <div>
+        <div style={{ fontFamily: 'DM Sans', fontSize: 13, fontWeight: 500, color: accent, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 20 }}>
+          The Problem
+        </div>
+        <h2 style={{ fontFamily: 'Playfair Display', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 500, lineHeight: 1.15, letterSpacing: '-0.02em', color: D.text, marginBottom: 24 }}>
+          You already know<br />
+          <em style={{ fontStyle: 'italic', color: accent }}>what</em> you blunder.<br />
+          You don't know <em style={{ fontStyle: 'italic' }}>why.</em>
+        </h2>
+        <p style={{ fontFamily: 'DM Sans', fontSize: 17, lineHeight: 1.7, color: D.muted, marginBottom: 24 }}>
+          Every chess engine tells you the move you missed. None of them tell you that you missed it because you were +3 material and your brain entered autopilot. That's the gap we close.
+        </p>
+        <p style={{ fontFamily: 'DM Sans', fontSize: 17, lineHeight: 1.7, color: D.muted }}>
+          Blunder Therapist treats your game history as a{' '}
+          <strong style={{ color: D.text, fontWeight: 500 }}>behavioral dataset</strong>—tracking timing volatility, decision drift, and emotional state across hundreds of games to build a psychological model uniquely yours.
+        </p>
+      </div>
+
+      <div style={{
+        background: D.bgCard, borderRadius: 16, padding: 32,
+        border: `1px solid ${D.border}`,
+      }}>
+        <div style={{ fontFamily: 'DM Sans', fontSize: 12, color: D.muted, marginBottom: 16, fontWeight: 500 }}>Game #247 · Post-game Analysis</div>
+        {[
+          { move: 'Move 23', eval: '+2.1', label: 'Good position', ok: true },
+          { move: 'Move 31', eval: '+3.8', label: 'Material surge', ok: true },
+          { move: 'Move 33', eval: '?? -0.2', label: 'Blunder — Tilt detected', ok: false },
+          { move: 'Move 34', eval: '-1.1', label: 'Panic response', ok: false },
+        ].map((row, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <div style={{ fontFamily: 'DM Sans', fontSize: 12, color: D.muted, width: 56, flexShrink: 0 }}>{row.move}</div>
+            <div style={{ flex: 1, height: 6, borderRadius: 100, background: 'rgba(240,235,227,0.06)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 100,
+                width: row.ok ? `${Math.min(100, parseFloat(row.eval) * 20)}%` : '8%',
+                background: row.ok ? accent : '#e05a4a',
+              }} />
+            </div>
+            <div style={{ fontFamily: 'DM Sans', fontSize: 12, fontWeight: 500, color: row.ok ? D.text : '#e05a4a', width: 140, flexShrink: 0 }}>
+              {row.label}
+            </div>
+          </div>
+        ))}
+        <div style={{
+          marginTop: 20, padding: '14px 16px',
+          background: `${accent}12`, borderRadius: 10, border: `1px solid ${accent}25`,
+        }}>
+          <div style={{ fontFamily: 'DM Sans', fontSize: 12, fontWeight: 600, color: accent, marginBottom: 4 }}>🧠 Behavioral Pattern Detected</div>
+          <div style={{ fontFamily: 'DM Sans', fontSize: 12, color: D.muted, lineHeight: 1.5 }}>
+            "You blunder 3× more often when your eval exceeds +3.0. Confidence-induced speed surge identified."
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+/* ── Features ── */
+const Features = ({ accent, showGM }) => {
+  const [active, setActive] = React.useState(0);
+
+  const features = [
+    {
+      icon: <IconFire />,
+      tag: 'Tilt Detector',
+      title: 'Real-time emotional\nstate monitoring',
+      desc: 'We analyze move-by-move timing and evaluation deltas as you play. The moment you enter a tilt pattern—panic speed, revenge blundering, analysis paralysis—the system knows.',
+      details: ['Thinking time volatility scoring', '"Panic" speed ratio detection', 'Post-game psychological report', 'Emotional recovery tracking'],
+      preview: (
+        <div style={{ padding: 28, background: D.bgCard2, borderRadius: 14, border: `1px solid ${D.border}` }}>
+          <div style={{ fontSize: 12, fontFamily: 'DM Sans', color: D.muted, marginBottom: 16 }}>Live Session · Move 41</div>
+          {[
+            { label: 'Tilt Level', value: 72, color: '#e87c5a' },
+            { label: 'Focus', value: 34, color: accent },
+            { label: 'Recovery', value: 55, color: '#7ac87a' },
+          ].map(bar => (
+            <div key={bar.label} style={{ marginBottom: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 12, fontFamily: 'DM Sans', color: D.muted }}>
+                <span>{bar.label}</span><span style={{ color: bar.color, fontWeight: 600 }}>{bar.value}%</span>
+              </div>
+              <div style={{ height: 4, background: 'rgba(240,235,227,0.07)', borderRadius: 100 }}>
+                <div style={{ height: '100%', width: `${bar.value}%`, background: bar.color, borderRadius: 100 }} />
+              </div>
+            </div>
+          ))}
+          <div style={{ marginTop: 20, padding: '10px 14px', background: 'rgba(232,124,90,0.12)', borderRadius: 8, fontSize: 12, fontFamily: 'DM Sans', color: '#e87c5a', lineHeight: 1.5, border: '1px solid rgba(232,124,90,0.2)' }}>
+            ⚠ Tilt spike detected — slow down. You have a won position.
+          </div>
+        </div>
+      ),
+    },
+    {
+      icon: <IconDNA />,
+      tag: 'Decision DNA',
+      title: 'Your psychological\nplayer profile',
+      desc: 'Every 5 games, we recompute your Decision DNA—a comprehensive archetype profile built from hundreds of behavioral signals. See yourself the way your opponents never do.',
+      details: ['Player archetype classification', showGM ? 'GM psychological similarity score' : 'Pattern similarity matching', 'Decision tendency mapping', 'Evolution tracking over time'],
+      preview: (
+        <div style={{ padding: 28, background: D.bgCard2, borderRadius: 14, border: `1px solid ${D.border}` }}>
+          <div style={{ fontFamily: 'DM Sans', fontSize: 12, color: D.muted, marginBottom: 16 }}>Decision DNA · Updated 2 games ago</div>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+            {[{ label: 'Tactical', pct: 68 }, { label: 'Aggressive', pct: 74 }, { label: 'Time Pressure', pct: 31 }, { label: 'Endgame', pct: 42 }].map(d => (
+              <div key={d.label} style={{ flex: '1 1 calc(50% - 6px)', background: D.bgCard, borderRadius: 10, padding: '12px 14px', border: `1px solid ${D.border}` }}>
+                <div style={{ fontFamily: 'Playfair Display', fontSize: 22, fontWeight: 500, color: accent }}>{d.pct}%</div>
+                <div style={{ fontFamily: 'DM Sans', fontSize: 11, color: D.muted, marginTop: 2 }}>{d.label}</div>
+              </div>
+            ))}
+          </div>
+          {showGM && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: `${accent}10`, borderRadius: 10, border: `1px solid ${accent}20` }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>♛</div>
+              <div>
+                <div style={{ fontFamily: 'DM Sans', fontSize: 12, fontWeight: 600, color: D.text }}>82% match — Mikhail Tal</div>
+                <div style={{ fontFamily: 'DM Sans', fontSize: 11, color: D.muted }}>Tactical aggressor, time pressure resilient</div>
+              </div>
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      icon: <IconChat />,
+      tag: 'AI Coach',
+      title: 'A coach that never\nforgets your games',
+      desc: 'Powered by LangGraph, your AI coach holds stateful memory across every session. Ask why you keep losing endgames and get an answer rooted in your actual behavioral history.',
+      details: ['Persistent cross-game memory', 'Context-aware tilt nudges', 'Natural language game review', 'Proactive pattern alerts'],
+      preview: (
+        <div style={{ padding: 24, background: D.bgCard2, borderRadius: 14, display: 'flex', flexDirection: 'column', gap: 10, border: `1px solid ${D.border}` }}>
+          {[
+            { role: 'user', text: 'Why do I keep blundering in the endgame?' },
+            { role: 'coach', text: 'Looking at your last 23 endgames: you speed up dramatically when you\'re ahead on time. Your think-time drops from 18s → 4s after move 40. That\'s when the blunders cluster.' },
+            { role: 'user', text: 'How do I fix it?' },
+            { role: 'coach', text: 'Set a 10-second floor per move after move 35. Your accuracy in K+P endings is 91% when rested, 67% after losses. Schedule endgame drills on fresh days.' },
+          ].map((msg, i) => (
+            <div key={i} style={{
+              alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+              maxWidth: '85%', padding: '10px 14px',
+              background: msg.role === 'user' ? accent : D.bgDark,
+              color: msg.role === 'user' ? '#0e0b08' : D.text,
+              borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+              fontFamily: 'DM Sans', fontSize: 12, lineHeight: 1.55, fontWeight: msg.role === 'user' ? 500 : 400,
+            }}>
+              {msg.text}
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
+  const f = features[active];
+
+  return (
+    <section id="features" style={{ padding: '120px 48px', background: D.bgCard }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+          <div style={{ fontFamily: 'DM Sans', fontSize: 13, fontWeight: 500, color: accent, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 16 }}>
+            Core Features
+          </div>
+          <h2 style={{ fontFamily: 'Playfair Display', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 500, letterSpacing: '-0.02em', color: D.text, lineHeight: 1.15 }}>
+            Three lenses on<br /><em style={{ fontStyle: 'italic', color: accent }}>your inner game</em>
+          </h2>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 64 }}>
+          {features.map((feat, i) => (
+            <button key={i} onClick={() => setActive(i)} style={{
+              padding: '10px 24px', borderRadius: 100,
+              border: active === i ? 'none' : `1px solid ${D.borderMd}`,
+              background: active === i ? accent : 'transparent',
+              color: active === i ? '#0e0b08' : D.muted,
+              fontFamily: 'DM Sans', fontSize: 14, fontWeight: active === i ? 600 : 400,
+              cursor: 'pointer', transition: 'all 0.2s',
+            }}>
+              {feat.tag}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+          <div>
+            <div style={{ color: accent, marginBottom: 16 }}>{f.icon}</div>
+            <h3 style={{ fontFamily: 'Playfair Display', fontSize: 38, fontWeight: 500, lineHeight: 1.2, letterSpacing: '-0.02em', color: D.text, marginBottom: 20, whiteSpace: 'pre-line' }}>
+              {f.title}
+            </h3>
+            <p style={{ fontFamily: 'DM Sans', fontSize: 16, lineHeight: 1.7, color: D.muted, marginBottom: 28 }}>
+              {f.desc}
+            </p>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {f.details.map((d, i) => (
+                <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'DM Sans', fontSize: 15, color: D.text }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, flexShrink: 0 }} />
+                  {d}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div key={active} style={{ animation: 'fadeIn 0.3s ease' }}>
+            {f.preview}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ── How It Works ── */
+const HowItWorks = ({ accent }) => {
+  const steps = [
+    { num: '01', title: 'Import Your History', desc: 'Connect Chess.com or Lichess and we pull your entire game archive—openings, timing data, evals, everything.' },
+    { num: '02', title: 'Behavioral Analysis', desc: 'Our pipeline processes each game: Raw PGN + timing + evals → GameFeatures → TiltReport → DecisionDNA.' },
+    { num: '03', title: 'Profile Built', desc: 'Your psychological fingerprint takes shape. Player archetype, tilt triggers, decision tendencies—all mapped.' },
+    { num: '04', title: 'Continuous Memory', desc: 'Every new game feeds back. Your coach learns, your profile refines, your patterns sharpen over time.' },
+  ];
+  return (
+    <section id="how-it-works" style={{ padding: '120px 48px', maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: 80 }}>
+        <div style={{ fontFamily: 'DM Sans', fontSize: 13, fontWeight: 500, color: accent, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 16 }}>
+          How It Works
+        </div>
+        <h2 style={{ fontFamily: 'Playfair Display', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 500, letterSpacing: '-0.02em', color: D.text, lineHeight: 1.15 }}>
+          From raw games to<br /><em style={{ fontStyle: 'italic', color: accent }}>self-knowledge</em>
+        </h2>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+        {steps.map((step, i) => (
+          <div key={i} style={{
+            padding: '36px 32px', position: 'relative',
+            borderLeft: i === 0 ? `1px solid ${D.border}` : 'none',
+            borderRight: `1px solid ${D.border}`,
+            borderTop: `1px solid ${D.border}`,
+            borderBottom: `1px solid ${D.border}`,
+          }}>
+            <div style={{ fontFamily: 'Playfair Display', fontSize: 64, fontWeight: 500, color: `${accent}15`, lineHeight: 1, marginBottom: 20 }}>
+              {step.num}
+            </div>
+            <h4 style={{ fontFamily: 'Playfair Display', fontSize: 20, fontWeight: 500, color: D.text, marginBottom: 12 }}>
+              {step.title}
+            </h4>
+            <p style={{ fontFamily: 'DM Sans', fontSize: 14, lineHeight: 1.65, color: D.muted }}>
+              {step.desc}
+            </p>
+            {i < steps.length - 1 && (
+              <div style={{ position: 'absolute', top: '50%', right: -12, transform: 'translateY(-50%)', zIndex: 2, color: accent, fontSize: 18 }}>›</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+/* ── Testimonials ── */
+const Testimonials = ({ accent }) => {
+  const quotes = [
+    { text: "I've been stuck at 1650 for two years. In three weeks of using Blunder Therapist, I learned I blunder exclusively when I'm ahead. That insight alone pushed me to 1720.", author: 'Ryo K.', rating: 1720 },
+    { text: "The AI coach remembered a game I played nine days ago and brought it up in context when I asked about a new pattern. No other tool has ever done that.", author: 'Priya M.', rating: 1890 },
+    { text: "The Decision DNA profile was almost uncomfortably accurate. I'm apparently 78% similar to Petrosian which explains everything about my style.", author: 'Marcus T.', rating: 2105 },
+  ];
+  return (
+    <section style={{ padding: '120px 48px', background: D.bgCard }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+          <h2 style={{ fontFamily: 'Playfair Display', fontSize: 'clamp(36px, 4vw, 48px)', fontWeight: 500, letterSpacing: '-0.02em', color: D.text, lineHeight: 1.15 }}>
+            Players who found<br /><em style={{ fontStyle: 'italic', color: accent }}>their pattern</em>
+          </h2>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+          {quotes.map((q, i) => (
+            <div key={i} style={{
+              padding: '32px 28px', background: D.bg, borderRadius: 16,
+              border: `1px solid ${D.border}`,
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 24,
+            }}>
+              <p style={{ fontFamily: 'Playfair Display', fontSize: 17, fontStyle: 'italic', lineHeight: 1.65, color: 'rgba(240,235,227,0.8)' }}>
+                "{q.text}"
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Sans', fontSize: 13, fontWeight: 600, color: accent }}>
+                  {q.author[0]}
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'DM Sans', fontSize: 14, fontWeight: 500, color: D.text }}>{q.author}</div>
+                  <div style={{ fontFamily: 'DM Sans', fontSize: 12, color: D.muted }}>{q.rating} Elo</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ── Final CTA ── */
+const FinalCTA = ({ accent, ctaLabel }) => (
+  <section style={{ padding: '140px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+    <div style={{
+      position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none',
+      backgroundImage: `repeating-conic-gradient(${D.text} 0% 25%, transparent 0% 50%)`,
+      backgroundSize: '60px 60px',
+    }} />
+    <div style={{
+      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+      width: 600, height: 600, borderRadius: '50%', pointerEvents: 'none',
+      background: `radial-gradient(circle, ${accent}14 0%, transparent 65%)`,
+    }} />
+    <div style={{ fontFamily: 'DM Sans', fontSize: 13, fontWeight: 500, color: accent, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 24, position: 'relative' }}>
+      Early Access
+    </div>
+    <h2 style={{ fontFamily: 'Playfair Display', fontSize: 'clamp(48px, 6vw, 80px)', fontWeight: 500, lineHeight: 1.08, letterSpacing: '-0.02em', color: D.text, maxWidth: 700, margin: '0 auto 24px', position: 'relative' }}>
+      Ready to understand<br /><em style={{ fontStyle: 'italic', color: accent }}>yourself?</em>
+    </h2>
+    <p style={{ fontFamily: 'DM Sans', fontSize: 18, lineHeight: 1.6, color: D.muted, maxWidth: 460, margin: '0 auto 48px', position: 'relative' }}>
+      Import your Chess.com or Lichess games and get your first psychological report in under 60 seconds.
+    </p>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, position: 'relative' }}>
+      <button style={{
+        background: accent, color: '#0e0b08',
+        border: 'none', borderRadius: 100, padding: '16px 40px',
+        fontFamily: 'DM Sans', fontSize: 16, fontWeight: 600,
+        cursor: 'pointer', transition: 'all 0.25s',
+        display: 'flex', alignItems: 'center', gap: 10,
+      }}
+      onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+      onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+        {ctaLabel} <IconArrow />
+      </button>
+    </div>
+    <div style={{ marginTop: 24, fontFamily: 'DM Sans', fontSize: 13, color: D.muted, position: 'relative' }}>
+      Free to start · No credit card required
+    </div>
+  </section>
+);
+
+/* ── Footer ── */
+const Footer = ({ accent }) => (
+  <footer style={{ borderTop: `1px solid ${D.border}`, padding: '40px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: D.text }}>
+      <ChessLogo size={18} color={accent} />
+      <span style={{ fontFamily: 'DM Sans', fontWeight: 600, fontSize: 14 }}>Blunder Therapist</span>
+    </div>
+    <div style={{ fontFamily: 'DM Sans', fontSize: 13, color: D.muted }}>© 2026 Blunder Therapist. All rights reserved.</div>
+    <div style={{ display: 'flex', gap: 24 }}>
+      {['Privacy', 'Terms', 'Contact'].map(l => (
+        <a key={l} href="#" style={{ fontFamily: 'DM Sans', fontSize: 13, color: D.muted, textDecoration: 'none' }}
+        onMouseEnter={e => e.target.style.color = D.text}
+        onMouseLeave={e => e.target.style.color = D.muted}>{l}</a>
+      ))}
+    </div>
+  </footer>
+);
+
+/* ── App ── */
+const App = () => {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  return (
+    <div style={{ background: D.bg, minHeight: '100vh' }}>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
+      <Nav accent={t.accentColor} ctaLabel={t.ctaLabel} />
+      <Hero accent={t.accentColor} ctaLabel={t.ctaLabel} />
+      <Problem accent={t.accentColor} />
+      <Features accent={t.accentColor} showGM={t.showGMComparison} />
+      <HowItWorks accent={t.accentColor} />
+      <Testimonials accent={t.accentColor} />
+      <FinalCTA accent={t.accentColor} ctaLabel={t.ctaLabel} />
+      <Footer accent={t.accentColor} />
+
+      <TweaksPanel>
+        <TweakSection title="Brand">
+          <TweakColor label="Accent color" value={t.accentColor} onChange={v => setTweak('accentColor', v)} />
+        </TweakSection>
+        <TweakSection title="Hero">
+          <TweakText label="CTA Button" value={t.ctaLabel} onChange={v => setTweak('ctaLabel', v)} />
+        </TweakSection>
+        <TweakSection title="Features">
+          <TweakToggle label="Show GM Comparison" value={t.showGMComparison} onChange={v => setTweak('showGMComparison', v)} />
+        </TweakSection>
+      </TweaksPanel>
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+  </script>
+</body>
+</html>

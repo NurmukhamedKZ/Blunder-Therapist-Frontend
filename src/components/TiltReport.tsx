@@ -26,9 +26,9 @@ export function TiltReport({ report }: { report: TiltDetectorResponse }) {
   const Icon = meta.icon;
 
   return (
-    <div className="rounded-3xl bg-white border border-[#2c1f14]/5 p-8 shadow-xl shadow-[#2c1f14]/5 relative overflow-hidden">
+    <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border)] p-8 shadow-xl shadow-black/5 relative overflow-hidden">
       {/* Decorative background element */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-[#a0724a]/5 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/5 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none" />
       
       <div className="flex items-center gap-3 mb-6 relative">
         <div className={`p-2 rounded-xl bg-opacity-10 ${meta.tint.replace('text-', 'bg-')}`}>
@@ -39,26 +39,26 @@ export function TiltReport({ report }: { report: TiltDetectorResponse }) {
         </span>
       </div>
 
-      <h2 className="font-display text-3xl mb-4 leading-tight text-[#2c1f14] relative">
+      <h2 className="font-display text-3xl mb-4 leading-tight text-[var(--text-main)] relative">
         {report.headline}
       </h2>
 
-      <p className="text-[#7a6454] leading-relaxed text-sm mb-8 relative">
+      <p className="text-[var(--text-muted)] leading-relaxed text-sm mb-8 relative">
         {report.diagnosis}
       </p>
 
-      <div className="bg-[#f5f0ea] rounded-2xl p-6 border border-[#a0724a]/10 relative">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#a0724a] mb-3">
+      <div className="bg-[var(--bg-app)] rounded-2xl p-6 border border-[var(--accent)]/10 relative">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] mb-3">
           Coaching Suggestion
         </p>
-        <p className="text-[#2c1f14] text-sm leading-relaxed font-medium">{report.suggestion}</p>
+        <p className="text-[var(--text-main)] text-sm leading-relaxed font-medium">{report.suggestion}</p>
       </div>
 
       {report.evidence_plies.length > 0 && (
-        <div className="mt-6 text-[10px] font-bold uppercase tracking-widest text-[#7a6454]/40 flex items-center gap-2">
-          <div className="w-1 h-1 rounded-full bg-[#7a6454]/40" />
+        <div className="mt-6 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]/40 flex items-center gap-2">
+          <div className="w-1 h-1 rounded-full bg-[var(--text-muted)]/40" />
           Evidence from moves:{" "}
-          <span className="text-[#7a6454]/60">
+          <span className="text-[var(--text-muted)]/60">
             {report.evidence_plies.map((p) => Math.ceil((p + 1) / 2)).join(", ")}
           </span>
         </div>
