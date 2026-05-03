@@ -3,67 +3,67 @@ import clsx from "clsx";
 
 export default function ProPage() {
   return (
-    <div className="min-h-full w-full flex flex-col items-center py-20 px-6 overflow-y-auto">
+    <div className="min-h-full w-full flex flex-col items-center py-20 px-6 overflow-y-auto bg-[#ede8e0]">
       <div className="max-w-4xl w-full flex flex-col items-center">
-        <h1 className="font-display text-4xl md:text-5xl mb-4 text-white font-semibold tracking-tight text-center">
-          Upgrade to Pro
+        <h1 className="font-display text-5xl md:text-6xl mb-6 text-[#2c1f14] font-medium tracking-tight text-center">
+          Upgrade to <span className="text-[#a0724a]">Pro</span>
         </h1>
-        <p className="text-ink-300 mb-12 text-center text-lg max-w-lg">
-          Unlock a personal AI coach on every game you play.
+        <p className="text-[#7a6454] mb-16 text-center text-xl max-w-lg font-light leading-relaxed">
+          Unlock a personal AI coach that studies every move you make.
         </p>
 
-        <div className="grid md:grid-cols-2 gap-6 w-full max-w-3xl">
+        <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
           {/* Free Tier */}
-          <div className="rounded-2xl border border-ink-700 bg-ink-900/50 p-8 flex flex-col">
-            <h3 className="text-xs font-bold tracking-widest text-ink-400 mb-4 uppercase">
-              Free
+          <div className="rounded-3xl border border-[#2c1f14]/5 bg-white p-10 flex flex-col shadow-xl shadow-[#2c1f14]/5">
+            <h3 className="text-[10px] font-bold tracking-[0.2em] text-[#7a6454] mb-6 uppercase">
+              Free Tier
             </h3>
-            <div className="mb-6 flex items-baseline gap-1">
-              <span className="text-4xl font-display text-white">$0</span>
+            <div className="mb-8 flex items-baseline gap-1">
+              <span className="text-5xl font-display text-[#2c1f14]">$0</span>
             </div>
 
-            <div className="w-full h-px bg-ink-800 mb-6"></div>
+            <div className="w-full h-px bg-[#2c1f14]/5 mb-8"></div>
 
-            <ul className="space-y-4 mb-10 flex-1">
+            <ul className="space-y-5 mb-12 flex-1">
               {[
                 "Unlimited game analysis",
                 "Limited Replay Mistakes",
                 "GM Puzzles",
                 "2 AI Coach games per week",
               ].map((feature, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-ink-300">
-                  <div className="mt-0.5 rounded-full bg-ink-800 p-0.5 text-ink-500">
-                    <Check size={12} strokeWidth={3} />
+                <li key={i} className="flex items-start gap-4 text-[15px] text-[#7a6454]">
+                  <div className="mt-1 rounded-full bg-[#f5f0ea] p-1 text-[#a0724a]">
+                    <Check size={14} strokeWidth={3} />
                   </div>
                   {feature}
                 </li>
               ))}
             </ul>
 
-            <button className="w-full py-3 rounded-xl border border-ink-700 text-sm font-medium text-ink-300 hover:text-white hover:bg-ink-800 transition-colors">
-              Current plan
+            <button className="w-full py-4 rounded-xl border-2 border-[#2c1f14]/5 text-sm font-bold text-[#7a6454] hover:bg-[#f5f0ea] transition-all">
+              Current Plan
             </button>
           </div>
 
           {/* Pro Tier */}
-          <div className="rounded-2xl bg-ink-800 border border-ink-600 p-8 flex flex-col relative shadow-2xl shadow-accent-500/5">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xs font-bold tracking-widest text-accent-500 uppercase">
-                Pro
+          <div className="rounded-3xl bg-[#2c1f14] p-10 flex flex-col relative shadow-2xl shadow-black/20 transform md:scale-105">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-[10px] font-bold tracking-[0.2em] text-[#a0724a] uppercase">
+                Pro Tier
               </h3>
-              <span className="text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full bg-accent-500/10 border border-accent-500/20 text-accent-500">
-                RECOMMENDED
+              <span className="text-[10px] font-bold tracking-widest px-3 py-1.5 rounded-full bg-[#a0724a]/20 border border-[#a0724a]/30 text-[#a0724a]">
+                MOST POPULAR
               </span>
             </div>
 
-            <div className="mb-6 flex items-baseline gap-1">
-              <span className="text-4xl font-display text-white">$8.49</span>
-              <span className="text-sm text-ink-400">/mo</span>
+            <div className="mb-8 flex items-baseline gap-1">
+              <span className="text-5xl font-display text-white">$8.49</span>
+              <span className="text-sm text-[#7a6454]">/mo</span>
             </div>
 
-            <div className="w-full h-px bg-ink-700 mb-6"></div>
+            <div className="w-full h-px bg-white/10 mb-8"></div>
 
-            <ul className="space-y-4 mb-10 flex-1">
+            <ul className="space-y-5 mb-12 flex-1">
               {[
                 "Everything in Free",
                 "Unlimited Replay Mistakes",
@@ -72,23 +72,23 @@ export default function ProPage() {
                 "Coach remembers your mistakes",
                 "Priority access to new features",
               ].map((feature, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-white">
-                  <div className="mt-0.5 rounded-full bg-accent-500/20 p-0.5 text-accent-500">
-                    <Check size={12} strokeWidth={3} />
+                <li key={i} className="flex items-start gap-4 text-[15px] text-white/90">
+                  <div className="mt-1 rounded-full bg-[#a0724a]/20 p-1 text-[#a0724a]">
+                    <Check size={14} strokeWidth={3} />
                   </div>
                   {feature}
                 </li>
               ))}
             </ul>
 
-            <button className="w-full py-3 rounded-xl bg-accent-500 text-white text-sm font-semibold hover:bg-accent-400 transition-colors shadow-lg shadow-accent-500/20">
+            <button className="w-full py-4 rounded-xl bg-[#a0724a] text-white text-sm font-bold hover:bg-[#8c6340] transition-all shadow-lg shadow-[#a0724a]/20">
               Upgrade to Pro
             </button>
           </div>
         </div>
 
-        <p className="mt-10 text-xs text-ink-500 text-center">
-          Manage or cancel anytime from the billing portal
+        <p className="mt-16 text-[10px] font-bold tracking-widest text-[#7a6454]/50 text-center uppercase">
+          Secure payment processing via Stripe
         </p>
       </div>
     </div>

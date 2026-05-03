@@ -26,33 +26,41 @@ export function TiltReport({ report }: { report: TiltDetectorResponse }) {
   const Icon = meta.icon;
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-ink-700 to-ink-800 border border-ink-600 p-6 shadow-2xl">
-      <div className="flex items-center gap-3 mb-4">
-        <Icon className={`w-6 h-6 ${meta.tint}`} />
-        <span className={`text-xs uppercase tracking-widest ${meta.tint}`}>
-          Pattern: {meta.label}
+    <div className="rounded-3xl bg-white border border-[#2c1f14]/5 p-8 shadow-xl shadow-[#2c1f14]/5 relative overflow-hidden">
+      {/* Decorative background element */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#a0724a]/5 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none" />
+      
+      <div className="flex items-center gap-3 mb-6 relative">
+        <div className={`p-2 rounded-xl bg-opacity-10 ${meta.tint.replace('text-', 'bg-')}`}>
+          <Icon className={`w-5 h-5 ${meta.tint}`} />
+        </div>
+        <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${meta.tint} opacity-80`}>
+          {meta.label} Detected
         </span>
       </div>
 
-      <h2 className="font-display text-2xl mb-3 leading-tight">
+      <h2 className="font-display text-3xl mb-4 leading-tight text-[#2c1f14] relative">
         {report.headline}
       </h2>
 
-      <p className="text-ink-500 leading-relaxed text-sm mb-6">
+      <p className="text-[#7a6454] leading-relaxed text-sm mb-8 relative">
         {report.diagnosis}
       </p>
 
-      <div className="border-t border-ink-600 pt-4">
-        <p className="text-xs uppercase tracking-widest text-accent-500 mb-2">
-          What to try next
+      <div className="bg-[#f5f0ea] rounded-2xl p-6 border border-[#a0724a]/10 relative">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#a0724a] mb-3">
+          Coaching Suggestion
         </p>
-        <p className="text-sm leading-relaxed">{report.suggestion}</p>
+        <p className="text-[#2c1f14] text-sm leading-relaxed font-medium">{report.suggestion}</p>
       </div>
 
       {report.evidence_plies.length > 0 && (
-        <div className="mt-4 text-xs text-ink-500">
+        <div className="mt-6 text-[10px] font-bold uppercase tracking-widest text-[#7a6454]/40 flex items-center gap-2">
+          <div className="w-1 h-1 rounded-full bg-[#7a6454]/40" />
           Evidence from moves:{" "}
-          {report.evidence_plies.map((p) => Math.ceil((p + 1) / 2)).join(", ")}
+          <span className="text-[#7a6454]/60">
+            {report.evidence_plies.map((p) => Math.ceil((p + 1) / 2)).join(", ")}
+          </span>
         </div>
       )}
     </div>

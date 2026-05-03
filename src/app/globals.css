@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html, body {
-  background: #0a0a0f;
-  color: #f5f5fa;
+  background: #ede8e0;
+  color: #2c1f14;
   -webkit-font-smoothing: antialiased;
   font-family: var(--font-dm-sans), sans-serif;
 }

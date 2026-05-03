@@ -75,37 +75,37 @@ export default function ImportGames({ onClose, onDone }: ImportGamesProps) {
       : 0;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-ink-800 border border-ink-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent-500/20 flex items-center justify-center border border-accent-500/30">
-              <Upload size={20} className="text-accent-500" />
+    <div className="fixed inset-0 bg-[#2c1f14]/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#f5f0ea] border border-[#2c1f14]/5 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#a0724a]/10 flex items-center justify-center border border-[#a0724a]/20">
+              <Upload size={24} className="text-[#a0724a]" />
             </div>
-            <h2 className="text-lg font-semibold text-white">Import Games</h2>
+            <h2 className="text-xl font-display text-[#2c1f14]">Import Games</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-ink-400 hover:text-white transition-colors"
+            className="text-[#7a6454] hover:text-[#2c1f14] transition-colors p-2 hover:bg-[#2c1f14]/5 rounded-full"
           >
             <X size={20} />
           </button>
         </div>
 
         {step === "form" && (
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="text-ink-400 text-sm mb-2 block">Platform</label>
+              <label className="text-[#7a6454] text-xs font-bold tracking-widest uppercase mb-3 block">Platform</label>
               <div className="flex gap-2">
                 {(["lichess", "chess.com"] as const).map((p) => (
                   <button
                     key={p}
                     type="button"
                     onClick={() => setPlatform(p)}
-                    className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors border ${
+                    className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all border ${
                       platform === p
-                        ? "bg-accent-500 text-white border-accent-500"
-                        : "bg-ink-700 text-ink-300 border-ink-600 hover:bg-ink-600"
+                        ? "bg-[#2c1f14] text-white border-[#2c1f14] shadow-md"
+                        : "bg-white text-[#7a6454] border-[#2c1f14]/10 hover:border-[#2c1f14]/20"
                     }`}
                   >
                     {p === "lichess" ? "Lichess" : "Chess.com"}
@@ -115,28 +115,28 @@ export default function ImportGames({ onClose, onDone }: ImportGamesProps) {
             </div>
 
             <div>
-              <label className="text-ink-400 text-sm mb-2 block">Username</label>
+              <label className="text-[#7a6454] text-xs font-bold tracking-widest uppercase mb-3 block">Username</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder={`Your ${platform} username`}
-                className="w-full bg-ink-700 border border-ink-600 rounded-xl px-4 py-2.5 text-white placeholder-ink-500 focus:outline-none focus:border-accent-500 transition-colors"
+                className="w-full bg-white border border-[#2c1f14]/10 rounded-xl px-4 py-3 text-[#2c1f14] placeholder-[#7a6454]/40 focus:outline-none focus:border-[#a0724a] transition-all shadow-sm"
               />
             </div>
 
             <div>
-              <label className="text-ink-400 text-sm mb-2 block">Period</label>
+              <label className="text-[#7a6454] text-xs font-bold tracking-widest uppercase mb-3 block">Period</label>
               <div className="flex gap-2">
                 {([30, 90] as const).map((d) => (
                   <button
                     key={d}
                     type="button"
                     onClick={() => setPeriodDays(d)}
-                    className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors border ${
+                    className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all border ${
                       periodDays === d
-                        ? "bg-accent-500 text-white border-accent-500"
-                        : "bg-ink-700 text-ink-300 border-ink-600 hover:bg-ink-600"
+                        ? "bg-[#2c1f14] text-white border-[#2c1f14] shadow-md"
+                        : "bg-white text-[#7a6454] border-[#2c1f14]/10 hover:border-[#2c1f14]/20"
                     }`}
                   >
                     {d} days
@@ -148,65 +148,73 @@ export default function ImportGames({ onClose, onDone }: ImportGamesProps) {
             <button
               type="submit"
               disabled={!username.trim() || isSubmitting}
-              className="w-full py-3 rounded-xl bg-accent-500 text-white font-semibold hover:bg-accent-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-4 rounded-xl bg-[#a0724a] text-white font-bold hover:bg-[#8c6340] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-[#a0724a]/20 mt-2"
             >
-              {isSubmitting ? "Starting..." : "Import games"}
+              {isSubmitting ? "Starting..." : "Import Games"}
             </button>
           </form>
         )}
 
         {step === "progress" && job && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 text-ink-300">
-              <Loader2 size={18} className="animate-spin text-accent-500 shrink-0" />
-              <span className="text-sm">
+          <div className="space-y-6 py-4 text-center">
+            <div className="flex flex-col items-center gap-4 text-[#2c1f14]">
+              <Loader2 size={32} className="animate-spin text-[#a0724a]" />
+              <span className="text-lg font-display">
                 {job.total_games === 0
                   ? "Fetching games…"
                   : `Analyzing ${job.processed_games} / ${job.total_games} games`}
               </span>
             </div>
             {job.total_games > 0 && (
-              <div className="w-full bg-ink-700 rounded-full h-2">
+              <div className="w-full bg-[#2c1f14]/5 rounded-full h-3 overflow-hidden">
                 <div
-                  className="bg-accent-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-[#a0724a] h-full transition-all duration-500 ease-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             )}
-            <p className="text-ink-500 text-xs">
-              Each game is evaluated by Stockfish — this may take a few minutes.
+            <p className="text-[#7a6454] text-sm italic">
+              Our AI is studying your move timing and evaluation patterns. This may take a minute.
             </p>
           </div>
         )}
 
         {step === "done" && job && (
-          <div className="space-y-4 text-center">
-            <CheckCircle size={40} className="text-green-400 mx-auto" />
-            <p className="text-white font-semibold text-lg">
-              {job.processed_games} game{job.processed_games !== 1 ? "s" : ""} imported!
-            </p>
-            <p className="text-ink-400 text-sm">
-              The AI coach now has access to your {platform} history.
-            </p>
+          <div className="space-y-6 py-4 text-center">
+            <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-2 border border-green-100">
+              <CheckCircle size={32} className="text-green-500" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-[#2c1f14] font-display text-2xl">
+                {job.processed_games} games imported!
+              </p>
+              <p className="text-[#7a6454] text-sm">
+                Your behavioral DNA has been updated with your {platform} history.
+              </p>
+            </div>
             <button
               onClick={onDone}
-              className="w-full py-3 rounded-xl bg-accent-500 text-white font-semibold hover:bg-accent-400 transition-colors"
+              className="w-full py-4 rounded-xl bg-[#2c1f14] text-white font-bold hover:bg-[#1a130d] transition-all shadow-lg shadow-black/10 mt-4"
             >
-              View games
+              Back to Dashboard
             </button>
           </div>
         )}
 
         {step === "error" && (
-          <div className="space-y-4 text-center">
-            <AlertCircle size={40} className="text-red-400 mx-auto" />
-            <p className="text-white font-semibold">Import failed</p>
-            <p className="text-ink-400 text-sm">{errorMsg}</p>
+          <div className="space-y-6 py-4 text-center">
+            <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-2 border border-red-100">
+              <AlertCircle size={32} className="text-red-500" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-[#2c1f14] font-display text-2xl">Import failed</p>
+              <p className="text-red-600/70 text-sm font-medium">{errorMsg}</p>
+            </div>
             <button
               onClick={() => setStep("form")}
-              className="w-full py-3 rounded-xl bg-ink-700 text-white font-semibold hover:bg-ink-600 transition-colors"
+              className="w-full py-4 rounded-xl bg-[#f5f0ea] text-[#2c1f14] font-bold hover:bg-[#ede8e0] transition-all border border-[#2c1f14]/10 mt-4"
             >
-              Try again
+              Try Again
             </button>
           </div>
         )}

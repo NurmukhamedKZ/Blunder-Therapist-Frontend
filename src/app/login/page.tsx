@@ -45,24 +45,24 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-ink-900 flex items-center justify-center px-4 w-full">
-      <div className="w-full max-w-sm">
-        <h1 className="font-display text-2xl tracking-tight mb-2 text-center text-white">
-          Blunder<span className="text-accent-500">.</span>Therapist
+    <div className="min-h-screen bg-[#ede8e0] flex items-center justify-center px-4 w-full">
+      <div className="w-full max-w-sm bg-[#f5f0ea] p-8 rounded-3xl border border-[#2c1f14]/5 shadow-xl">
+        <h1 className="font-display text-3xl tracking-tight mb-2 text-center text-[#2c1f14]">
+          Blunder<span className="text-[#a0724a]">.</span>Therapist
         </h1>
-        <p className="text-ink-500 text-sm text-center mb-8">
+        <p className="text-[#7a6454] text-sm text-center mb-8">
           {mode === "signin" ? "Sign in to continue" : "Create your account"}
         </p>
 
         {(oauthError || formError) && (
-          <p className="text-signal-red text-sm mb-4 text-center rounded-lg bg-ink-800 border border-signal-red/30 px-4 py-2">
+          <p className="text-red-600 text-sm mb-4 text-center rounded-lg bg-red-50 border border-red-200 px-4 py-2">
             {formError ?? "Authentication failed. Please try again."}
           </p>
         )}
 
         <button
           onClick={handleGoogle}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-ink-600 hover:border-ink-500 hover:bg-ink-800 transition mb-6 text-sm font-medium text-white"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-[#2c1f14]/10 hover:border-[#2c1f14]/20 hover:bg-[#2c1f14]/5 transition mb-6 text-sm font-medium text-[#2c1f14]"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden>
             <path
@@ -86,9 +86,9 @@ function LoginForm() {
         </button>
 
         <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1 h-px bg-ink-700" />
-          <span className="text-ink-500 text-xs">or</span>
-          <div className="flex-1 h-px bg-ink-700" />
+          <div className="flex-1 h-px bg-[#2c1f14]/10" />
+          <span className="text-[#7a6454] text-xs">or</span>
+          <div className="flex-1 h-px bg-[#2c1f14]/10" />
         </div>
 
         <form onSubmit={handleEmailAuth} className="space-y-3">
@@ -98,7 +98,7 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full bg-ink-800 border border-ink-700 rounded-lg px-4 py-3 text-sm placeholder-ink-500 text-white focus:outline-none focus:border-accent-500 transition"
+            className="w-full bg-white border border-[#2c1f14]/10 rounded-xl px-4 py-3 text-sm placeholder-[#7a6454]/50 text-[#2c1f14] focus:outline-none focus:border-[#a0724a] transition"
           />
           <input
             type="password"
@@ -106,12 +106,12 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full bg-ink-800 border border-ink-700 rounded-lg px-4 py-3 text-sm placeholder-ink-500 text-white focus:outline-none focus:border-accent-500 transition"
+            className="w-full bg-white border border-[#2c1f14]/10 rounded-xl px-4 py-3 text-sm placeholder-[#7a6454]/50 text-[#2c1f14] focus:outline-none focus:border-[#a0724a] transition"
           />
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent-500 hover:bg-accent-400 disabled:opacity-50 text-white px-4 py-3 rounded-lg text-sm font-medium transition shadow-sm shadow-accent-500/20"
+            className="w-full bg-[#2c1f14] hover:bg-[#1a130d] disabled:opacity-50 text-white px-4 py-3 rounded-xl text-sm font-medium transition shadow-lg shadow-black/10"
           >
             {loading
               ? "Loading…"
@@ -126,7 +126,7 @@ function LoginForm() {
             setMode(mode === "signin" ? "signup" : "signin");
             setFormError(null);
           }}
-          className="w-full mt-4 text-ink-500 text-xs hover:text-white transition"
+          className="w-full mt-6 text-[#7a6454] text-xs hover:text-[#2c1f14] transition font-medium"
         >
           {mode === "signin"
             ? "Don't have an account? Sign up"

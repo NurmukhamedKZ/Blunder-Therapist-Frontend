@@ -37,14 +37,14 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-16 lg:w-64 flex flex-col h-screen bg-ink-800 py-6 shrink-0 transition-all border-r border-ink-700">
+    <aside className="w-16 lg:w-64 flex flex-col h-screen bg-[#f5f0ea] py-6 shrink-0 transition-all border-r border-[#2c1f14]/10">
       <div className="px-4 mb-8 flex justify-center lg:justify-start lg:px-6">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-accent-500 flex items-center justify-center shrink-0 shadow-lg shadow-accent-500/20">
-            <Swords size={18} className="text-white" />
+          <div className="w-8 h-8 rounded bg-[#a0724a] flex items-center justify-center shrink-0 shadow-lg shadow-[#a0724a]/20">
+            <Swords size={18} className="text-[#f5f0ea]" />
           </div>
-          <h1 className="hidden lg:block font-display text-xl tracking-tight text-white font-semibold">
-            Blunder<span className="text-accent-500">.</span>Therapist
+          <h1 className="hidden lg:block font-display text-xl tracking-tight text-[#2c1f14] font-semibold">
+            Blunder<span className="text-[#a0724a]">.</span>Therapist
           </h1>
         </Link>
       </div>
@@ -60,29 +60,29 @@ export function Sidebar() {
               className={clsx(
                 "flex items-center justify-center lg:justify-start gap-3 px-3 py-3 lg:py-2.5 rounded-xl transition-all",
                 isActive
-                  ? "bg-accent-500/10 text-accent-500 font-medium shadow-inner"
-                  : "text-ink-400 hover:bg-ink-700 hover:text-white"
+                  ? "bg-[#a0724a]/10 text-[#a0724a] font-medium"
+                  : "text-[#7a6454] hover:bg-[#a0724a]/5 hover:text-[#2c1f14]"
               )}
             >
-              <Icon size={20} className={clsx("shrink-0", isActive ? "text-accent-500" : "")} />
+              <Icon size={20} className={clsx("shrink-0", isActive ? "text-[#a0724a]" : "text-[#7a6454]")} />
               <span className="hidden lg:block text-sm">{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="px-2 lg:px-4 mt-auto pt-4 border-t border-ink-700/50">
+      <div className="px-2 lg:px-4 mt-auto pt-4 border-t border-[#2c1f14]/5">
         {user ? (
           <div className="flex flex-col gap-2">
-            <div className="hidden lg:flex items-center gap-3 px-3 py-2 mb-2 rounded-xl bg-ink-900/50">
-              <div className="w-8 h-8 rounded-full bg-accent-500 flex items-center justify-center text-xs shrink-0 font-medium text-white shadow-sm">
+            <div className="hidden lg:flex items-center gap-3 px-3 py-2 mb-2 rounded-xl bg-[#2c1f14]/5">
+              <div className="w-8 h-8 rounded-full bg-[#a0724a] flex items-center justify-center text-xs shrink-0 font-medium text-white shadow-sm">
                 {user.email?.charAt(0).toUpperCase() || "U"}
               </div>
-              <div className="truncate text-sm text-ink-300 font-medium">{user.email}</div>
+              <div className="truncate text-sm text-[#7a6454] font-medium">{user.email}</div>
             </div>
             <button
               onClick={handleSignOut}
-              className="flex items-center justify-center lg:justify-start gap-3 px-3 py-3 lg:py-2.5 rounded-xl text-ink-400 hover:bg-ink-700 hover:text-signal-red transition-colors w-full"
+              className="flex items-center justify-center lg:justify-start gap-3 px-3 py-3 lg:py-2.5 rounded-xl text-[#7a6454] hover:bg-red-50 hover:text-red-600 transition-colors w-full"
             >
               <LogOut size={20} className="shrink-0" />
               <span className="hidden lg:block text-sm font-medium">Sign out</span>
@@ -91,7 +91,7 @@ export function Sidebar() {
         ) : (
           <Link
             href="/login"
-            className="flex items-center justify-center lg:justify-start gap-3 px-3 py-3 lg:py-2.5 rounded-xl text-ink-400 hover:bg-ink-700 hover:text-white transition-colors w-full"
+            className="flex items-center justify-center lg:justify-start gap-3 px-3 py-3 lg:py-2.5 rounded-xl text-[#7a6454] hover:bg-[#a0724a]/5 hover:text-[#2c1f14] transition-colors w-full"
           >
             <LogOut size={20} className="shrink-0" />
             <span className="hidden lg:block text-sm font-medium">Sign in</span>
