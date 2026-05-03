@@ -9,7 +9,7 @@ import type { User } from "@supabase/supabase-js";
 import clsx from "clsx";
 
 const NAV_ITEMS = [
-  { name: "Home", href: "/", icon: Home },
+  { name: "Home", href: "/dashboard", icon: Home },
   { name: "Play", href: "/play", icon: Swords },
   { name: "Puzzles", href: "#", icon: Puzzle },
   { name: "Upload PGN", href: "#", icon: Upload },
@@ -39,7 +39,7 @@ export function Sidebar() {
   return (
     <aside className="w-16 lg:w-64 flex flex-col h-screen bg-ink-800 py-6 shrink-0 transition-all border-r border-ink-700">
       <div className="px-4 mb-8 flex justify-center lg:justify-start lg:px-6">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-3">
           <div className="w-8 h-8 rounded bg-accent-500 flex items-center justify-center shrink-0 shadow-lg shadow-accent-500/20">
             <Swords size={18} className="text-white" />
           </div>

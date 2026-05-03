@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
-import { Sidebar } from "@/components/Sidebar";
+import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+});
+
 export const metadata: Metadata = {
-  title: "Blunder Therapist",
+  title: "Blunder Therapist — Chess Psychology Platform",
   description:
     "Chess that analyzes how you make decisions, not just which moves you play.",
 };
@@ -15,11 +25,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex h-screen bg-ink-900 text-white overflow-hidden antialiased">
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto w-full">
-          {children}
-        </main>
+      <body className={`${playfair.variable} ${dmSans.variable} antialiased font-sans`}>
+        {children}
       </body>
     </html>
   );
