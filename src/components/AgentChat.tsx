@@ -13,7 +13,7 @@ interface Props {
   tiltReport: TiltDetectorResponse | null;
   lastObservation?: { event: "blunder"; payload: any; timestamp: number } | null;
   gameHistory?: Array<{ ply: number; san: string; eval_after: number; time_sec: number }>;
-  initialEvent?: string;
+  initialEvent?: "game_start" | "blunder" | "game_end" | "arrival";
 }
 
 let _id = 0;
