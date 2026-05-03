@@ -18,11 +18,12 @@ export default function ImportGames({ onClose, onDone }: ImportGamesProps) {
   const [step, setStep] = useState<Step>("form");
   const [job, setJob] = useState<ImportJobStatus | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stopPolling = () => {
     if (pollRef.current) {
-      clearInterval(pollRef.current);
+      clearTimeout(pollRef.current);
       pollRef.current = null;
     }
   };
@@ -31,30 +32,40 @@ export default function ImportGames({ onClose, onDone }: ImportGamesProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim()) return;
+    if (!username.trim() || isSubmitting) return;
+    
+    setIsSubmitting(true);
     try {
       const created = await importApi.create(platform, username.trim(), periodDays);
       setJob(created);
       setStep("progress");
-      pollRef.current = setInterval(async () => {
+      
+      stopPolling();
+      
+      const poll = async () => {
         try {
           const updated = await importApi.status(created.job_id);
           setJob(updated);
           if (updated.status === "done") {
-            stopPolling();
             setStep("done");
+            return; // stop polling
           } else if (updated.status === "failed") {
-            stopPolling();
             setErrorMsg(updated.error ?? "Import failed");
             setStep("error");
+            return; // stop polling
           }
         } catch {
           // transient poll error — keep polling
         }
-      }, 1000);
+        pollRef.current = setTimeout(poll, 1000);
+      };
+      
+      pollRef.current = setTimeout(poll, 1000);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Failed to start import");
       setStep("error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -136,10 +147,10 @@ export default function ImportGames({ onClose, onDone }: ImportGamesProps) {
 
             <button
               type="submit"
-              disabled={!username.trim()}
+              disabled={!username.trim() || isSubmitting}
               className="w-full py-3 rounded-xl bg-accent-500 text-white font-semibold hover:bg-accent-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              Import games
+              {isSubmitting ? "Starting..." : "Import games"}
             </button>
           </form>
         )}

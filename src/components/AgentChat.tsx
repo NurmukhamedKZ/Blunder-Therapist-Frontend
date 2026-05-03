@@ -11,12 +11,13 @@ interface Props {
   tiltReport: TiltDetectorResponse | null;
   lastObservation?: { event: "blunder"; payload: any; timestamp: number } | null;
   gameHistory?: Array<{ ply: number; san: string; eval_after: number; time_sec: number }>;
+  initialEvent?: string;
 }
 
 let _id = 0;
 const nextId = () => `m${++_id}`;
 
-export function AgentChat({ threadId, tiltReport, lastObservation, gameHistory }: Props) {
+export function AgentChat({ threadId, tiltReport, lastObservation, gameHistory, initialEvent }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -39,8 +40,17 @@ export function AgentChat({ threadId, tiltReport, lastObservation, gameHistory }
         );
       })
       .catch(() => {});
+    
     // Best-effort initialize the thread on first mount
-    agentApi.observe(threadId, "game_start", {}).catch(() => {});
+    // If it's not game_start, we might want to consume the stream (e.g. arrival greeting)
+    const event = initialEvent || "game_start";
+    agentApi.observe(threadId, event, {}).then(resp => {
+      if (cancelled) return;
+      if (event !== "game_start") {
+        void consumeStream(resp);
+      }
+    }).catch(() => {});
+
     return () => {
       cancelled = true;
     };

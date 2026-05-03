@@ -76,6 +76,8 @@ export interface GameSummary {
   result: string;
   played_at: string;
   tilt_report: TiltDetectorResponse | null;
+  opponent_name: string | null;
+  platform: string | null;
 }
 
 export interface GameListResponse {

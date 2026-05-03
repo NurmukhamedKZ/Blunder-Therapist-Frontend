@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   { name: "Play", href: "/play", icon: Swords },
   { name: "Puzzles", href: "#", icon: Puzzle },
   { name: "Upload PGN", href: "#", icon: Upload },
-  { name: "Pro", href: "#", icon: Crown },
+  { name: "Pro", href: "/pro", icon: Crown },
 ];
 
 export function Sidebar() {
