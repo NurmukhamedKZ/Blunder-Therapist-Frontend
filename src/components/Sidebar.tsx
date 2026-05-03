@@ -16,6 +16,22 @@ const NAV_ITEMS = [
   { name: "Pro", href: "/pro", icon: Crown },
 ];
 
+const ChessLogo = ({ size = 20 }: { size?: number }) => {
+  const cells = [];
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if ((r + c) % 2 === 0) {
+        cells.push(<rect key={`${r}-${c}`} x={c * (size/4)} y={r * (size/4)} width={size/4} height={size/4} fill="currentColor"/>);
+      }
+    }
+  }
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {cells}
+    </svg>
+  );
+};
+
 export function Sidebar() {
   const pathname = usePathname();
   const supabase = createClient();
@@ -32,16 +48,16 @@ export function Sidebar() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push("/");
     router.refresh();
   }
 
   return (
     <aside className="w-16 lg:w-64 flex flex-col h-screen bg-[#f5f0ea] py-6 shrink-0 transition-all border-r border-[#2c1f14]/10">
       <div className="px-4 mb-8 flex justify-center lg:justify-start lg:px-6">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-[#a0724a] flex items-center justify-center shrink-0 shadow-lg shadow-[#a0724a]/20">
-            <Swords size={18} className="text-[#f5f0ea]" />
+        <Link href="/" className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded bg-[#a0724a] flex items-center justify-center shrink-0 shadow-lg shadow-[#a0724a]/20 text-[#f5f0ea]">
+            <ChessLogo size={20} />
           </div>
           <h1 className="hidden lg:block font-display text-xl tracking-tight text-[#2c1f14] font-semibold">
             Blunder<span className="text-[#a0724a]">.</span>Therapist
