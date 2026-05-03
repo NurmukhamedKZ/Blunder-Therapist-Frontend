@@ -10,6 +10,9 @@ export type ChatMessage =
   | { id: string; kind: "tilt_card"; report: TiltDetectorResponse };
 
 export function AgentMessage({ msg }: { msg: ChatMessage }) {
+  if ("text" in msg && msg.text.startsWith("[OBSERVATION]")) {
+    return null;
+  }
   if (msg.kind === "tilt_card") {
     return (
       <div className="my-2">

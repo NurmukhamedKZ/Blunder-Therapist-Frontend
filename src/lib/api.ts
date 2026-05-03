@@ -123,7 +123,7 @@ async function postStream(path: string, body: unknown): Promise<Response> {
 }
 
 export const agentApi = {
-  observe: (thread_id: string, event: "game_start" | "blunder" | "game_end",
+  observe: (thread_id: string, event: "game_start" | "blunder" | "game_end" | "arrival",
             payload: Record<string, unknown> = {}) =>
     postStream("/api/agent/observe", { thread_id, event, payload }),
 

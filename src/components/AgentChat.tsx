@@ -23,6 +23,7 @@ export function AgentChat({ threadId, tiltReport, lastObservation, gameHistory, 
   const [streaming, setStreaming] = useState(false);
   const tiltSeenRef = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const initialObsPromiseRef = useRef<Promise<Response> | null>(null);
 
   // Load history on mount
   useEffect(() => {
@@ -32,11 +33,13 @@ export function AgentChat({ threadId, tiltReport, lastObservation, gameHistory, 
       .then((res) => {
         if (cancelled) return;
         setMessages(
-          res.messages.map((m) => ({
-            id: nextId(),
-            kind: m.role === "user" ? "user" : "agent",
-            text: m.content,
-          })),
+          res.messages
+            .filter((m) => !m.content.startsWith("[OBSERVATION]"))
+            .map((m) => ({
+              id: nextId(),
+              kind: m.role === "user" ? "user" : "agent",
+              text: m.content,
+            })),
         );
       })
       .catch(() => {});
@@ -44,7 +47,11 @@ export function AgentChat({ threadId, tiltReport, lastObservation, gameHistory, 
     // Best-effort initialize the thread on first mount
     // If it's not game_start, we might want to consume the stream (e.g. arrival greeting)
     const event = initialEvent || "game_start";
-    agentApi.observe(threadId, event, {}).then(resp => {
+    if (!initialObsPromiseRef.current) {
+      initialObsPromiseRef.current = agentApi.observe(threadId, event, {});
+    }
+    
+    initialObsPromiseRef.current.then(resp => {
       if (cancelled) return;
       if (event !== "game_start") {
         void consumeStream(resp);
